@@ -1,18 +1,17 @@
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+
 
 
 <!-- PROJECT LOGO -->
 <br />
-<p align="center">
-  <a href="https://github.com/AmunRa-Rising/AmunRa">
-    <img src="https://media.forgecdn.net/avatars/232/925/637069336967519305.png">
-  </a>
-
-  <h3 align="center">Amun-Ra</h3>
-</p>
+<h1 align="center">
+  <br>
+    <h1 align="center">Amun-Ra</h1>
+  <br>
+<a href=""><img alt="GitHub contributors" src="https://img.shields.io/github/contributors/AmunRa-Rising/AmunRa">
+<a href="https://github.com/AmunRa-Rising/AmunRa/network"><img alt="GitHub forks" src="https://img.shields.io/github/forks/AmunRa-Rising/AmunRa">
+<a href="https://github.com/AmunRa-Rising/AmunRa/blob/master/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/AmunRa-Rising/AmunRa">
+</a>
+</h1>
 
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
