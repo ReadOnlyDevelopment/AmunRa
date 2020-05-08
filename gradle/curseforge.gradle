@@ -1,0 +1,100 @@
+curseforge {
+    if (project.hasProperty('cf_project_id')) {
+        apiKey = secret.curseforgeAPIKey
+        project {
+            id = project.cf_project_id
+            if (project.hasProperty('cf_changelog_filename')) {
+                changelog = file(project.cf_changelog_filename)
+            } else {
+                changelog = ''
+            }
+            if (project.hasProperty('cf_changelog_type')) {
+                changelogType = project.cf_changelog_type
+            }
+            if ((project.hasProperty('cf_release_type')) && ((project.cf_release_type == 'alpha') || (project.cf_release_type == 'beta') || (project.cf_release_type == 'release'))) {
+                releaseType = project.cf_release_type
+            } else {
+                releaseType = 'alpha'
+            }
+            if (project.hasProperty('cf_versions')) {
+                final def versions = "${project.cf_versions}".split(', ')
+                versions.each {
+                    addGameVersion "${it}"
+                }
+            }
+            mainArtifact(jar) {
+                if (getBooleanProperty('cf_use_custom_display_name')) {
+                    displayName = "${project.name} ${project.display_version}"
+                }
+                if (project.hasProperty('cf_requirements') || project.hasProperty('cf_optionals') || project.hasProperty('cf_embeddeds') || project.hasProperty('cf_tools') || project.hasProperty('cf_incompatibles') || project.hasProperty('cf_includes')) {
+                    relations {
+                        if (project.hasProperty('cf_requirements')) {
+                            final def requirements = "${project.cf_requirements}".split(', ')
+                            requirements.each {
+                                requiredDependency "${it}"
+                            }
+                        }
+                        if (project.hasProperty('cf_optionals')) {
+                            final def optionals = "${project.cf_optionals}".split(', ')
+                            optionals.each {
+                                optionalDependency "${it}"
+                            }
+                        }
+                        if (project.hasProperty('cf_embeddeds')) {
+                            final def embeddeds = "${project.cf_embeddeds}".split(', ')
+                            embeddeds.each {
+                                embeddedLibrary "${it}"
+                            }
+                        }
+                        if (project.hasProperty('cf_tools')) {
+                            final def tools = "${project.cf_tools}".split(', ')
+                            tools.each {
+                                tool "${it}"
+                            }
+                        }
+                        if (project.hasProperty('cf_incompatibles')) {
+                            final def incompatibles = "${project.cf_incompatibles}".split(', ')
+                            incompatibles.each {
+                                incompatible "${it}"
+                            }
+                        }
+                        if (project.hasProperty('cf_includes')) {
+                            final def includes = "${project.cf_includes}".split(', ')
+                            includes.each {
+                                include "${it}"
+                            }
+                        }
+                    }
+                }
+            }
+            if (getBooleanProperty('create_api_jar')) {
+                addArtifact(apiJar) {
+                    if (getBooleanProperty('cf_use_custom_display_name')) {
+                        displayName = "${project.name} ${project.display_version} API"
+                    }
+                }
+            }
+            if (getBooleanProperty('create_source_jar')) {
+                addArtifact(sourceJar) {
+                    if (getBooleanProperty('cf_use_custom_display_name')) {
+                        displayName = "${project.name} ${project.display_version} Sources"
+                    }
+                }
+            }
+            if (getBooleanProperty('create_deobf_jar')) {
+                addArtifact(deobfJar) {
+                    if (getBooleanProperty('cf_use_custom_display_name')) {
+                        displayName = "${project.name} ${project.display_version} Development"
+                    }
+                }
+            }
+            if (getBooleanProperty('create_javadoc_jar')) {
+                addArtifact(javadocJar) {
+                    if (getBooleanProperty('cf_use_custom_display_name')) {
+                        displayName = "${project.name} ${project.display_version} Javadoc"
+                    }
+                }
+            }
+        }
+    }
+}

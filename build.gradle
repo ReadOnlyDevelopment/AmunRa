@@ -1,0 +1,385 @@
+buildscript {
+    repositories {
+      	mavenLocal()
+        jcenter()
+        mavenCentral()
+        maven { url = "https://files.minecraftforge.net/maven" }
+        maven {
+            name = 'gradle'
+            url 'https://plugins.gradle.org/m2/'
+        }
+        maven {
+            name = 'sonatype'
+            url = 'https://oss.sonatype.org/content/groups/public'
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+    }
+}
+
+plugins {
+    id 'com.matthewprenger.cursegradle' version '1.4.0'
+    id "com.wynprice.cursemaven" version "2.1.1"
+    id "com.jfrog.bintray" version "1.8.1"
+    id 'net.ltgt.apt' version '0.10' // for lombok
+    id 'maven-publish'
+    //id 'maven'
+    id 'java'
+}
+
+repositories {
+    flatDir {
+        name "fileRepo"
+        dirs "repo"
+    }
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.compilerArgs = [
+            '-Xlint:deprecation' // deprecation, rawtypes, cast, unchecked, all
+    ]
+}
+
+javadoc {
+    failOnError = false
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+eclipse.project {
+    buildCommand 'org.eclipse.buildship.core.gradleprojectbuilder'
+    natures 'org.eclipse.buildship.core.gradleprojectnature'
+}
+
+apply from: 'gradle/secret.gradle'
+
+def versionInfo = getModVersion()
+System.out.println(versionInfo)
+version = "${versionInfo['version']}"
+def build_num = getBuildNumber()
+
+version = "${mod_version}"
+group = "${group}"
+archivesBaseName = "${name}"
+
+sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+
+String GCBuild = "261"
+String GCVersion = "1.12.2-4.0.2.${GCBuild}"
+
+repositories {
+    ivy {
+        url "https://ci.micdoodle8.com/job/"
+        layout 'pattern', {
+            artifact "[organization]/${GCBuild}/artifact/Forge/build/libs/[module]-[revision].jar"
+        }
+        metadataSources { 
+            artifact()
+        }
+    }
+	maven {
+		name = 'curseforge'
+		url = 'https://minecraft.curseforge.com/api/maven/'
+	}    
+    maven {
+        name 'DVS1 Maven FS'
+        url 'http://dvs1.progwml6.com/files/maven'
+    }
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+
+	compile "com.mod-buildcraft:buildcraft-api:7.99.24.6"
+    compile "mezz.jei:jei_${mc_version}:${jei_version}:api"
+    runtime "mezz.jei:jei_${mc_version}:${jei_version}"
+    	
+    compile "Galacticraft-1.12-dev:GalacticraftCore-Dev:${GCVersion}"
+    compile "Galacticraft-1.12-dev:Galacticraft-API:${GCVersion}"
+    compile "Galacticraft-1.12-dev:Galacticraft-Planets-Dev:${GCVersion}"
+    compile "Galacticraft-1.12-dev:MicdoodleCore-Dev:${GCVersion}"
+    
+
+}
+
+
+apply from: 'gradle/curseforge.gradle'
+
+minecraft {
+    version = project.forge_mc_version + '-' + project.forge_version
+    runDir = 'run'
+    mappings = project.mcp_mappings_version
+
+    replace "BUILD_NUM = 0", "BUILD_NUM = " + build_num
+    replaceIn "ExoplanetsMod.java"
+
+    if (project.hasProperty('coreplugin')) {
+        clientJvmArgs += '-Dfml.coreMods.load=' + project.coreplugin
+        serverJvmArgs += '-Dfml.coreMods.load=' + project.coreplugin
+    }
+
+    if (project.hasProperty('mc_username')) {
+        clientRunArgs += ['--username', project.mc_username]
+        if (project.hasProperty('mc_password')) {
+            clientRunArgs += ['--password', project.mc_password]
+        }
+    }
+    if (project.hasProperty('mc_uuid')) {
+        clientRunArgs += ['--uuid', project.mc_uuid]
+    }
+
+    // disable server gui
+    serverRunArgs += 'nogui'
+
+    // skip the screen to confirm that you want to load a world with missing registry entries
+    serverJvmArgs += '-Dfml.doNotBackup=true'
+    clientJvmArgs += '-Dfml.doNotBackup=true'
+
+    // skip having to confirm on server
+    serverJvmArgs += '-Dfml.queryResult=confirm'
+
+    //skip jansi warnings in the log
+    serverJvmArgs += '-Dlog4j.skipJansi=true'
+    clientJvmArgs += '-Dlog4j.skipJansi=true'
+
+    if (project.hasProperty('client_args')) {
+        clientJvmArgs += project.client_args
+    }
+    if (project.hasProperty('server_args')) {
+        serverJvmArgs += project.server_args
+    }
+}
+
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': "${versionInfo['version_short']}", 'mcversion': project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+
+    rename '(exoplanets_at.cfg)', 'META-INF/$1'
+}
+
+import java.util.regex.Matcher
+
+jar {
+    appendix = "${project.mc_version}"
+}
+
+task apiJar(type: Jar) {
+    appendix = "${project.mc_version}"
+    classifier = 'apiClasses'
+    from apiClasses
+}
+
+task deobfJar(type: Jar) {
+    appendix = "${project.mc_version}"
+    classifier = 'deobf'
+    from sourceSets.main.output
+}
+
+task sourcesJar(type: Jar) {
+    appendix = "${project.mc_version}"
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    appendix = "${project.mc_version}"
+    classifier = 'javadoc'
+    from javadoc.getDestinationDir()
+}
+
+artifacts {
+    if (project.hasProperty('doAPIJar')) {
+        archives apiJar
+    }
+    if (project.hasProperty('doDeobfJar')) {
+        archives deobfJar
+    }
+    if (project.hasProperty('doSourceJar')) {
+        archives sourcesJar
+    }
+    if (project.hasProperty('doJavadocJar')) {
+        archives javadocJar
+    }
+}
+
+publishing {
+    publications {
+        exoplanets(MavenPublication) {
+            groupId 'net.rom'
+            artifactId 'exoplanets'
+            version "${versionInfo['version_short']}".toString()
+
+            from components.java
+            
+			artifact deobfJar
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+
+bintray {
+    // Not sure if this syntax works, need to test
+    user = secret.BINTRAY_USER ?: System.getenv('BINTRAY_USER')
+    key = secret.BINTRAY_KEY ?: System.getenv('BINTRAY_KEY')
+    publications = ['exoplanets']
+
+    pkg {
+        repo = 'exoplanets'
+        name = 'exoplanets-1.12.2'
+        licenses = ["MIT"]
+        vcsUrl = 'https://github.com/ROMVoid95/Interstellar-Exoplanets.git'
+
+        version {
+            name = "${versionInfo['version_short']}".toString()
+            desc = "Silent Lib (1.12.2) ${versionInfo['version_short']}".toString()
+            released = new Date()
+            vcsTag = "v${versionInfo['version_short']}".toString()
+        }
+    }
+}
+
+// Version stuff
+
+boolean getBooleanProperty(final String property) {
+    if (project.hasProperty(property)) {
+        return ((String) project.findProperty(property)).toBoolean()
+    } else {
+        return false
+    }
+}
+
+def getModVersion() {
+    try {
+        return getGitVersion()
+    } catch (Exception ex) {
+        System.out.println("Git version failed, falling back to old method")
+        return getVersion('VERSION', getModFile())
+    }
+}
+
+def getGitVersion() {
+    // Call git command
+    def outStream = new ByteArrayOutputStream()
+    def result = exec {
+        executable = 'git'
+        args = [ 'describe', '--long' ]
+        standardOutput = outStream
+    }
+
+    def fullVersion = outStream.toString().trim()
+    def matcher = fullVersion =~ /(\d+).(\d+).(\d+)-(.*)/
+
+    def maj = matcher[0][1]
+    def min = matcher[0][2]
+    def rev = matcher[0][3]
+    def bn = getBuildNumber()
+
+    return makeVersionMap(maj, min, rev, bn, matcher[0][4])
+}
+
+static def makeVersionMap(maj, min, rev, bn, githash) {
+    def out = [:]
+    out['build.major.number'] = maj.toString()
+    out['build.minor.number'] = min.toString()
+    out['build.revision.number'] = rev.toString()
+    out['build.githash'] = githash
+    out['build.number'] = bn.toString()
+    out['version_short'] = "${maj}.${min}.${rev}".toString()
+    out['version'] = "${maj}.${min}.${rev}+${bn}".toString()
+    return out
+}
+
+// Modified old version getter
+def getVersion(String type, String mod_file) {
+    String maj = '0'
+    String min = '0'
+    String rev = '0'
+    String bn = getBuildNumber()
+
+    File file = file(mod_file)
+    def prefix = ~/^(?:public|protected|private) static final String $type = ".*$/
+    file.eachLine { String s ->
+        s = s.trim()
+        if (s ==~ prefix || prefix.matcher(s).matches()) {
+            String[] bits = s.split("=")
+            String interesting = bits[1].trim()
+            interesting = interesting.substring(1, interesting.length() - 2)
+            String[] pts = interesting.trim().split("\\.")
+
+            maj = pts[0] ?: '0'
+            min = pts[1] ?: '0'
+            rev = pts[2] ?: '0'
+        }
+    }
+
+    return makeVersionMap(maj, min, rev, bn, 'unknown')
+}
+
+// Used by old getVersion
+String getModFile() {
+    String path = ''
+    FileTree tree = fileTree(dir: 'src/main/java' )
+    tree.include '**/*.java'
+    tree.visit { element ->
+        if (element.file.isFile()) {
+            element.file.eachLine { String s ->
+                s = s.trim()
+                if (s.startsWith('@Mod(')) {
+                    path = "'src/main/java/rom/core/$element.relativePath"
+                }
+            }
+        }
+    }
+    return path
+}
+
+// Build number tracking
+
+String getBuildNumber() {
+    def versionFile = file('version.properties')
+    if (versionFile.canRead()) {
+        Properties versionProps = new Properties()
+        versionProps.load(new FileInputStream(versionFile))
+        return versionProps['build_num'].toString()
+    }
+    return "1"
+}
+
+task incrementBuild {
+    doFirst {
+        def versionFile = file('version.properties')
+        if (versionFile.canRead()) {
+            Properties versionProps = new Properties()
+            versionProps.load(new FileInputStream(versionFile))
+            def num = versionProps['build_num'].toInteger() + 1
+            println("incrementing BuildNumber to: " + num)
+            versionProps['build_num'] = num.toString()
+            versionProps.store(versionFile.newWriter(), null)
+        } else {
+            println("version.properties file not found! Ignoring.")
+        }
+    }
+}
+build.finalizedBy incrementBuild // only increment on successful builds
