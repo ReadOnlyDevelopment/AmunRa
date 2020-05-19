@@ -20,8 +20,8 @@
 ## About The Project
 
 This is an addon for the Minecraft Mod GalactiCraft.
-//TODO
 
+1.12.2 Port for AmunaRa 
 ---
 
 ## Prerequisites
