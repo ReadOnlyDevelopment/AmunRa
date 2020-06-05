@@ -1,53 +1,50 @@
 package de.katzenpapst.amunra.mothership.fueldisplay;
 
-import net.minecraft.util.IIcon;
 import net.minecraftforge.fluids.Fluid;
 
 public class MothershipFuelDisplayFluid extends MothershipFuelDisplay {
 
-    private Fluid fluid;
+	private Fluid fluid;
 
-    public MothershipFuelDisplayFluid(Fluid fluid) {
-        this.fluid = fluid;
-    }
+	public MothershipFuelDisplayFluid(Fluid fluid) {
+		this.fluid = fluid;
+	}
 
-    @Override
-    public IIcon getIcon() {
-        return fluid.getIcon();
-    }
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof MothershipFuelDisplayFluid))
+			return false;
+		return fluid == ((MothershipFuelDisplayFluid) other).fluid;
+	}
 
-    @Override
-    public String getDisplayName() {
-        return fluid.getLocalizedName();
-    }
+	@Override
+	public String getDisplayName() {
+		return fluid.getLocalizedName();
+	}
 
-    @Override
-    public int getSpriteNumber() {
-        return fluid.getSpriteNumber();
-    }
+	@Override
+	public float getFactor() {
+		return 0.001F;
+	}
 
-    @Override
-    public String getUnit() {
-        return "B";
-    }
+	@Override
+	public IIcon getIcon() {
+		return fluid.getIcon();
+	}
 
-    @Override
-    public float getFactor() {
-        return 0.001F;
-    }
+	@Override
+	public int getSpriteNumber() {
+		return fluid.getSpriteNumber();
+	}
 
-    @Override
-    public boolean equals(Object other) {
-        if(!(other instanceof MothershipFuelDisplayFluid)) {
-            return false;
-        }
-        return fluid == ((MothershipFuelDisplayFluid)other).fluid;
-    }
+	@Override
+	public String getUnit() {
+		return "B";
+	}
 
-    @Override
-    public int hashCode() {
-        return fluid.hashCode() + 89465;
-    }
-
+	@Override
+	public int hashCode() {
+		return fluid.hashCode() + 89465;
+	}
 
 }

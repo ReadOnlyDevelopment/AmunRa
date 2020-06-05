@@ -3,44 +3,63 @@ package de.katzenpapst.amunra.command;
 import de.katzenpapst.amunra.mothership.Mothership;
 import de.katzenpapst.amunra.mothership.MothershipWorldProvider;
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 
 public class CommandMothershipForceArrive extends CommandBase {
 
-    public CommandMothershipForceArrive() {
+	public CommandMothershipForceArrive() {
 
-    }
+	}
 
-    @Override
-    public int getRequiredPermissionLevel()
-    {
-        return 2;
-    }
+	@Override
+	public String getCommandName() {
+		return "mothership_force_arrival";
+	}
 
-    @Override
-    public String getCommandName() {
-        return "mothership_force_arrival";
-    }
+	@Override
+	public String getCommandUsage(ICommandSender p_71518_1_) {
+		return "/" + this.getCommandName();
+	}
 
-    @Override
-    public String getCommandUsage(ICommandSender p_71518_1_) {
-        return "/" + this.getCommandName();
-    }
+	@Override
+	public int getRequiredPermissionLevel() {
+		return 2;
+	}
 
-    @Override
-    public void processCommand(ICommandSender sender, String[] args) {
-        if(sender.getEntityWorld().provider instanceof MothershipWorldProvider) {
-            MothershipWorldProvider msProvider = ((MothershipWorldProvider)sender.getEntityWorld().provider);
+	@Override
+	public void processCommand(ICommandSender sender, String[] args) {
+		if (sender.getEntityWorld().provider instanceof MothershipWorldProvider) {
+			MothershipWorldProvider msProvider = (MothershipWorldProvider) sender.getEntityWorld().provider;
 
-            if(!((Mothership)msProvider.getCelestialBody()).isInTransit()) {
-                sender.addChatMessage(new ChatComponentText("Mothership not in transit"));
-            } else {
-                ((Mothership)msProvider.getCelestialBody()).forceArrival();
-            }
-        } else {
-            sender.addChatMessage(new ChatComponentText("Not on a mothership"));
-        }
-    }
+			if (!((Mothership) msProvider.getCelestialBody()).isInTransit()) {
+				sender.addChatMessage(new ChatComponentText("Mothership not in transit"));
+			} else {
+				((Mothership) msProvider.getCelestialBody()).forceArrival();
+			}
+		} else {
+			sender.addChatMessage(new ChatComponentText("Not on a mothership"));
+		}
+	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getUsage(ICommandSender sender) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+		// TODO Auto-generated method stub
+
+	}
 
 }

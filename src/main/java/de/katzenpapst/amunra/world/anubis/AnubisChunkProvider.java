@@ -3,6 +3,12 @@ package de.katzenpapst.amunra.world.anubis;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.katzenpapst.amunra.old.block.ARBlocks;
+import de.katzenpapst.amunra.world.AmunraChunkProvider;
+import de.katzenpapst.amunra.world.mapgen.village.BoxHouseComponent;
+import de.katzenpapst.amunra.world.mapgen.village.DomedHouseComponent;
+import de.katzenpapst.amunra.world.mapgen.village.GridVillageGenerator;
+import de.katzenpapst.amunra.world.mapgen.village.SolarField;
 import micdoodle8.mods.galacticraft.api.prefab.core.BlockMetaPair;
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace;
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta;
@@ -11,140 +17,150 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSkeleton;
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie;
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome.SpawnListEntry;
 import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraft.world.biome.BiomeGenBase.SpawnListEntry;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.IChunkProvider;
-import de.katzenpapst.amunra.block.ARBlocks;
-import de.katzenpapst.amunra.world.AmunraChunkProvider;
-import de.katzenpapst.amunra.world.mapgen.village.BoxHouseComponent;
-import de.katzenpapst.amunra.world.mapgen.village.DomedHouseComponent;
-import de.katzenpapst.amunra.world.mapgen.village.GridVillageGenerator;
-import de.katzenpapst.amunra.world.mapgen.village.SolarField;
 
 public class AnubisChunkProvider extends AmunraChunkProvider {
 
-    protected GridVillageGenerator gVillage = new GridVillageGenerator();
+	protected GridVillageGenerator gVillage = new GridVillageGenerator();
 
-    //PyramidGenerator pyramid = new PyramidGenerator();
+	// PyramidGenerator pyramid = new PyramidGenerator();
 
-    //Pyramid testPyramid = new Pyramid();
+	// Pyramid testPyramid = new Pyramid();
 
-    public AnubisChunkProvider(World par1World, long seed,
-            boolean mapFeaturesEnabled) {
-        super(par1World, seed, mapFeaturesEnabled);
+	public AnubisChunkProvider(World par1World, long seed, boolean mapFeaturesEnabled) {
+		super(par1World, seed, mapFeaturesEnabled);
 
-        gVillage.addComponentType(BoxHouseComponent.class, 0.9F, 2, 4);
-        gVillage.addComponentType(SolarField.class, 0.7F, 2, 6);
-        gVillage.addComponentType(DomedHouseComponent.class, 0.7F, 2, 4);
-        //gVillage.addComponentType(PyramidHouseComponent.class, 0.7F, 2, 4);
-    }
+		gVillage.addComponentType(BoxHouseComponent.class, 0.9F, 2, 4);
+		gVillage.addComponentType(SolarField.class, 0.7F, 2, 6);
+		gVillage.addComponentType(DomedHouseComponent.class, 0.7F, 2, 4);
+		// gVillage.addComponentType(PyramidHouseComponent.class, 0.7F, 2, 4);
+	}
 
-    @Override
-    protected BiomeDecoratorSpace getBiomeGenerator() {
-        // TODO Auto-generated method stub
-        return new AnubisBiomeDecorator();
-    }
+	@Override
+	public boolean chunkExists(int x, int y) {
+		return true; // ?
+	}
 
-    //This should be a custom biome for your mod, but I'm opting to go desert instead out of quickness
-    //and the fact that biomes are outside the scope of this tutorial
-    @Override
-    protected BiomeGenBase[] getBiomesForGeneration() {
-        return new BiomeGenBase[]{BiomeGenBase.desert};
-    }
+	@Override
+	protected BiomeDecoratorSpace getBiomeGenerator() {
+		// TODO Auto-generated method stub
+		return new AnubisBiomeDecorator();
+	}
 
-    @Override
-    protected SpawnListEntry[] getCreatures() {
-        // SpawnListEntry villager = new SpawnListEntry(EntityAlienVillager.class, 10, 2, 2);
-        return new SpawnListEntry[]{};
-    }
+	// This should be a custom biome for your mod, but I'm opting to go desert instead out of quickness
+	// and the fact that biomes are outside the scope of this tutorial
+	@Override
+	protected BiomeGenBase[] getBiomesForGeneration() {
+		return new BiomeGenBase[] { BiomeGenBase.desert };
+	}
 
-    @Override
-    protected BlockMetaPair getDirtBlock() {
-        return ARBlocks.blockBasaltRegolith;
-    }
+	@Override
+	protected SpawnListEntry[] getCreatures() {
+		// SpawnListEntry villager = new SpawnListEntry(EntityAlienVillager.class, 10, 2, 2);
+		return new SpawnListEntry[] {};
+	}
 
-    @Override
-    protected BlockMetaPair getGrassBlock() {
-        return ARBlocks.blockDust;
-    }
+	@Override
+	protected BlockMetaPair getDirtBlock() {
+		return ARBlocks.blockBasaltRegolith;
+	}
 
-    @Override
-    protected BlockMetaPair getStoneBlock() {
-        return ARBlocks.blockBasalt;
-    }
+	@Override
+	protected BlockMetaPair getGrassBlock() {
+		return ARBlocks.blockDust;
+	}
 
-    @Override
-    public double getHeightModifier() {
-        return 12;
-    }
+	@Override
+	public double getHeightModifier() {
+		return 12;
+	}
 
-    @Override
-    protected SpawnListEntry[] getMonsters() {
-        SpawnListEntry skele = new SpawnListEntry(EntityEvolvedSkeleton.class, 100, 4, 4);
-        SpawnListEntry creeper = new SpawnListEntry(EntityEvolvedCreeper.class, 100, 4, 4);
-        SpawnListEntry zombie = new SpawnListEntry(EntityEvolvedZombie.class, 100, 4, 4);
+	@Override
+	protected SpawnListEntry[] getMonsters() {
+		SpawnListEntry skele = new SpawnListEntry(EntityEvolvedSkeleton.class, 100, 4, 4);
+		SpawnListEntry creeper = new SpawnListEntry(EntityEvolvedCreeper.class, 100, 4, 4);
+		SpawnListEntry zombie = new SpawnListEntry(EntityEvolvedZombie.class, 100, 4, 4);
 
-        return new SpawnListEntry[]{skele, creeper, zombie};
-    }
+		return new SpawnListEntry[] { skele, creeper, zombie };
+	}
 
-    @Override
-    public double getMountainHeightModifier() {
-        return 95;
-    }
+	@Override
+	public double getMountainHeightModifier() {
+		return 95;
+	}
 
-    @Override
-    protected int getSeaLevel() {
-        return 93;// taken from mars
-    }
+	@Override
+	protected int getSeaLevel() {
+		return 93;// taken from mars
+	}
 
-    @Override
-    public double getSmallFeatureHeightModifier() {
-        return 26;
-    }
+	@Override
+	public double getSmallFeatureHeightModifier() {
+		return 26;
+	}
 
+	@Override
+	protected BlockMetaPair getStoneBlock() {
+		return ARBlocks.blockBasalt;
+	}
 
+	@Override
+	public double getValleyHeightModifier() {
+		return 60;
+	}
 
-    @Override
-    public double getValleyHeightModifier() {
-        return 60;
-    }
+	@Override
+	protected List<MapGenBaseMeta> getWorldGenerators() {
+		// TODO fill in with caves and villages
+		ArrayList<MapGenBaseMeta> list = new ArrayList<MapGenBaseMeta>();
+		list.add(gVillage);
+		// list.add(pyramid);
+		return list;
+	}
 
-    @Override
-    protected List<MapGenBaseMeta> getWorldGenerators() {
-        // TODO fill in with caves and villages
-        ArrayList<MapGenBaseMeta> list = new ArrayList<MapGenBaseMeta>();
-        list.add(gVillage);
-        // list.add(pyramid);
-        return list;
-    }
+	@Override
+	public void onChunkProvide(int arg0, int arg1, Block[] arg2, byte[] arg3) {
+	}
 
-    @Override
-    public void onChunkProvide(int arg0, int arg1, Block[] arg2, byte[] arg3) {
-    }
+	@Override
+	public void onPopulate(IChunkProvider arg0, int arg1, int arg2) {
+	}
 
-    @Override
-    public void onPopulate(IChunkProvider arg0, int arg1, int arg2){
-    }
+	@Override
+	public void populate(IChunkProvider par1IChunkProvider, int chunkX, int chunkZ) {
+		super.populate(par1IChunkProvider, chunkX, chunkZ);
 
-    @Override
-    public boolean chunkExists(int x, int y){
-        return true; //?
-    }
+		this.gVillage.populate(this, world, chunkX, chunkZ);
+		// this.pyramid.populate(this, world, chunkX, chunkZ);
 
-    @Override
-    public void populate(IChunkProvider par1IChunkProvider, int chunkX, int chunkZ) {
-        super.populate(par1IChunkProvider, chunkX, chunkZ);
+		// this.villageTest.generateStructuresInChunk(this.world, this.rand, par2, par3);
+	}
 
-        this.gVillage.populate(this, worldObj, chunkX, chunkZ);
-        // this.pyramid.populate(this, worldObj, chunkX, chunkZ);
+	@Override
+	public void recreateStructures(int par1, int par2) {
+		// this.villageTest.func_151539_a(this, this.world, par1, par2, (Block[]) null);
+	}
 
-        //this.villageTest.generateStructuresInChunk(this.worldObj, this.rand, par2, par3);
-    }
+	@Override
+	public void recreateStructures(Chunk chunkIn, int x, int z) {
+		// TODO Auto-generated method stub
 
-    @Override
-    public void recreateStructures(int par1, int par2)
-    {
-        //this.villageTest.func_151539_a(this, this.worldObj, par1, par2, (Block[]) null);
-    }
+	}
+
+	@Override
+	public void onChunkProvide(int cX, int cZ, ChunkPrimer primer) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onPopulate(int cX, int cZ) {
+		// TODO Auto-generated method stub
+
+	}
 
 }

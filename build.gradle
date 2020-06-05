@@ -21,10 +21,7 @@ buildscript {
 plugins {
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id "com.wynprice.cursemaven" version "2.1.1"
-    id "com.jfrog.bintray" version "1.8.1"
-    id 'net.ltgt.apt' version '0.10' // for lombok
-    id 'maven-publish'
-    //id 'maven'
+	id 'idea'
     id 'java'
 }
 
@@ -78,15 +75,15 @@ String GCBuild = "261"
 String GCVersion = "1.12.2-4.0.2.${GCBuild}"
 
 repositories {
-    ivy {
-        url "https://ci.micdoodle8.com/job/"
-        layout 'pattern', {
-            artifact "[organization]/${GCBuild}/artifact/Forge/build/libs/[module]-[revision].jar"
-        }
-        metadataSources { 
-            artifact()
-        }
-    }
+	ivy {
+		url "https://micdoodle8.com/new-builds/"
+		layout 'pattern', {
+			artifact "[organization]/${GCBuild}/[module]-[revision].jar"
+		}
+		metadataSources {
+			artifact()
+		}
+	}
 	maven {
 		name = 'curseforge'
 		url = 'https://minecraft.curseforge.com/api/maven/'
@@ -95,8 +92,10 @@ repositories {
         name 'DVS1 Maven FS'
         url 'http://dvs1.progwml6.com/files/maven'
     }
-    jcenter()
     mavenCentral()
+	maven {
+		url = "https://mod-buildcraft.com/maven/"
+	}
 }
 
 dependencies {
@@ -105,10 +104,20 @@ dependencies {
     compile "mezz.jei:jei_${mc_version}:${jei_version}:api"
     runtime "mezz.jei:jei_${mc_version}:${jei_version}"
     	
-    compile "Galacticraft-1.12-dev:GalacticraftCore-Dev:${GCVersion}"
-    compile "Galacticraft-1.12-dev:Galacticraft-API:${GCVersion}"
-    compile "Galacticraft-1.12-dev:Galacticraft-Planets-Dev:${GCVersion}"
-    compile "Galacticraft-1.12-dev:MicdoodleCore-Dev:${GCVersion}"
+	compile "GC-1.12-dev:GalacticraftCore-Dev:${GCVersion}"
+	compile "GC-1.12-dev:Galacticraft-API:${GCVersion}"
+	compile "GC-1.12-dev:Galacticraft-Planets-Dev:${GCVersion}"
+	compile "GC-1.12-dev:MicdoodleCore-Dev:${GCVersion}"
+	
+	compileOnly 'org.projectlombok:lombok:1.18.12'
+	annotationProcessor 'org.projectlombok:lombok:1.18.12'
+	
+	testCompileOnly 'org.projectlombok:lombok:1.18.12'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+	
+	compile 'org.reflections:reflections:0.9.12'
+	
+	
     
 
 }
@@ -122,7 +131,7 @@ minecraft {
     mappings = project.mcp_mappings_version
 
     replace "BUILD_NUM = 0", "BUILD_NUM = " + build_num
-    replaceIn "ExoplanetsMod.java"
+    replaceIn "AmunRa.java"
 
     if (project.hasProperty('coreplugin')) {
         clientJvmArgs += '-Dfml.coreMods.load=' + project.coreplugin
@@ -175,7 +184,7 @@ processResources {
         exclude 'mcmod.info'
     }
 
-    rename '(exoplanets_at.cfg)', 'META-INF/$1'
+    rename '(amunra_at.cfg)', 'META-INF/$1'
 }
 
 import java.util.regex.Matcher
@@ -220,43 +229,6 @@ artifacts {
     }
     if (project.hasProperty('doJavadocJar')) {
         archives javadocJar
-    }
-}
-
-publishing {
-    publications {
-        exoplanets(MavenPublication) {
-            groupId 'net.rom'
-            artifactId 'exoplanets'
-            version "${versionInfo['version_short']}".toString()
-
-            from components.java
-            
-			artifact deobfJar
-            artifact sourcesJar
-            artifact javadocJar
-        }
-    }
-}
-
-bintray {
-    // Not sure if this syntax works, need to test
-    user = secret.BINTRAY_USER ?: System.getenv('BINTRAY_USER')
-    key = secret.BINTRAY_KEY ?: System.getenv('BINTRAY_KEY')
-    publications = ['exoplanets']
-
-    pkg {
-        repo = 'exoplanets'
-        name = 'exoplanets-1.12.2'
-        licenses = ["MIT"]
-        vcsUrl = 'https://github.com/ROMVoid95/Interstellar-Exoplanets.git'
-
-        version {
-            name = "${versionInfo['version_short']}".toString()
-            desc = "Silent Lib (1.12.2) ${versionInfo['version_short']}".toString()
-            released = new Date()
-            vcsTag = "v${versionInfo['version_short']}".toString()
-        }
     }
 }
 
@@ -347,7 +319,7 @@ String getModFile() {
             element.file.eachLine { String s ->
                 s = s.trim()
                 if (s.startsWith('@Mod(')) {
-                    path = "'src/main/java/rom/core/$element.relativePath"
+                    path = "src/main/java/$element.relativePath"
                 }
             }
         }

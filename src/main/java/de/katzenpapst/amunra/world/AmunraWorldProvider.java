@@ -16,260 +16,208 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class AmunraWorldProvider extends WorldProviderSpace implements
-IExitHeight, ISolarLevel {
+public abstract class AmunraWorldProvider extends WorldProviderSpace implements IExitHeight, ISolarLevel {
 
-    protected float solarLevel = -1;
+	protected float solarLevel = -1;
 
+	@Override
+	public boolean canSpaceshipTierPass(int tier) {
+		return tier >= AmunRa.config.planetDefaultTier;
+	}
 
-    /**
-     * Gravity relative to OW.
-     * 1.35 seems to be the last value where you can jump up blocks.
-     * walking up stairs seems to work on any gravity
-     * @return
-     */
-    protected abstract float getRelativeGravity();
+	protected float getAmunBrightnessFactor(float partialTicks) {
+		CelestialBody curBody = this.getCelestialBody();
+		if (curBody instanceof Moon) {
+			curBody = ((Moon) curBody).getParentPlanet();
+		}
+		AngleDistance ad = AstronomyHelper.projectBodyToSky(curBody, AmunRa.instance.starAmun, partialTicks, this.world.getWorldTime());
+		// ad.angle is in pi
 
-    @Override
-    public boolean isDaytime()
-    {
-        return worldObj.skylightSubtracted < 4;
-    }
+		// the angle I get is relative to celestialAngle
+		float brightnessFactor = 1.0F - (MathHelper.cos(this.world.getCelestialAngle(partialTicks) * (float) Math.PI * 2.0F + ad.angle) * 2.0F + 0.5F);
 
-    @Override
-    public float getGravity() {
-        return 0.08F * (1-getRelativeGravity());
-    }
+		if (brightnessFactor < 0) {
+			brightnessFactor = 0;
+		}
+		if (brightnessFactor > 1) {
+			brightnessFactor = 1;
+		}
 
-    @Override
-    public double getFuelUsageMultiplier() {
-        return getRelativeGravity();
-    }
+		brightnessFactor = 1.0F - brightnessFactor;
 
-    @Override
-    public float getFallDamageModifier() {
-        return getRelativeGravity();
-    }
+		// let's say brightnessFactor == 1 -> 0.5 of brightness
+		return (float) (brightnessFactor * 0.8 / ad.distance);
+	}
 
-    /*@Override
-    public boolean hasBreathableAtmosphere()
-    {
-        //return this.isGasPresent(IAtmosphericGas.OXYGEN) && !this.isGasPresent(IAtmosphericGas.CO2); <- WTF
-        return this.isGasPresent(IAtmosphericGas.OXYGEN);
+	@Override
+	public float getFallDamageModifier() {
+		return getRelativeGravity();
+	}
 
-    }*/
-
-    @Override
-    public boolean canSpaceshipTierPass(int tier)
-    {
-        return tier >= AmunRa.config.planetDefaultTier;
-    }
-
-    @Override
-    public boolean shouldForceRespawn()
-    {
-        return !ConfigManagerCore.forceOverworldRespawn;
-    }
-
-    public boolean hasAtmosphere() {
-        return this.getCelestialBody().atmosphere.size() > 0;
-    }
-
-    public boolean hasClouds() {
-        return this.hasAtmosphere();
-    }
-
-    /**
-     * Return Vec3D with biome specific fog color
-     */
-    @Override
-    @SideOnly(Side.CLIENT)
-    public Vec3 getFogColor(float celestialAngle, float partialTicksIThink)
-    {
-        float dayFactor = MathHelper.cos(celestialAngle * (float)Math.PI * 2.0F) * 2.0F + 0.5F;
-
-        if (dayFactor < 0.0F)
-        {
-            dayFactor = 0.0F;
-        }
-
-        if (dayFactor > 1.0F)
-        {
-            dayFactor = 1.0F;
-        }
-
-        Vector3 baseColor = getFogColor();
-
-        float f3 = baseColor.floatX();
-        float f4 = baseColor.floatY();
-        float f5 = baseColor.floatZ();
-        f3 *= dayFactor * 0.94F + 0.06F;
-        f4 *= dayFactor * 0.94F + 0.06F;
-        f5 *= dayFactor * 0.91F + 0.09F;
-        return Vec3.createVectorHelper(f3, f4, f5);
-    }
-
-    @Override
-    public float getSolarSize()
-    {
-        // this works only for planets...
-        CelestialBody body = this.getCelestialBody();
-
-        if(body instanceof Moon) {
-            return 1.0F / ((Moon) body).getParentPlanet().getRelativeDistanceFromCenter().unScaledDistance;
-        }
-        return 1.0F / body.getRelativeDistanceFromCenter().unScaledDistance;
-    }
-
-    @Override
-    public double getSolarEnergyMultiplier() {
-        if(solarLevel < 0) {
-            solarLevel = AstronomyHelper.getSolarEnergyMultiplier(getCelestialBody(), !getCelestialBody().atmosphere.isEmpty());
-        }
-        return solarLevel;
-    }
-    /*
+	/**
+	 * Return Vec3D with biome specific fog color
+	 */
+	@Override
 	@SideOnly(Side.CLIENT)
-    @Override
-    public Vec3 getFogColor(float var1, float var2)
-    {
-        Vector3 fogColor = this.getFogColor();
-        return Vec3.createVectorHelper(fogColor.floatX(), fogColor.floatY(), fogColor.floatZ());
-    }*/
+	public Vec3 getFogColor(float celestialAngle, float partialTicksIThink) {
+		float dayFactor = MathHelper.cos(celestialAngle * (float) Math.PI * 2.0F) * 2.0F + 0.5F;
 
-    @Override
-    public Vec3 getSkyColor(Entity cameraEntity, float partialTicks)
-    {
-        Vector3 skyColorBase = this.getSkyColor();
-        //return Vec3.createVectorHelper(skyColor.floatX(), skyColor.floatY(), skyColor.floatZ());
-        //return new Vector3(0.60588, 0.7745, 1);
-        float celestialAngle = this.worldObj.getCelestialAngle(partialTicks);
-        float dayFactor = MathHelper.cos(celestialAngle * (float)Math.PI * 2.0F) * 2.0F + 0.5F;
+		if (dayFactor < 0.0F) {
+			dayFactor = 0.0F;
+		}
 
+		if (dayFactor > 1.0F) {
+			dayFactor = 1.0F;
+		}
 
+		Vector3 baseColor = getFogColor();
 
-        if (dayFactor < 0.0F)
-        {
-            dayFactor = 0.0F;
-        }
+		float f3 = baseColor.floatX();
+		float f4 = baseColor.floatY();
+		float f5 = baseColor.floatZ();
+		f3 *= dayFactor * 0.94F + 0.06F;
+		f4 *= dayFactor * 0.94F + 0.06F;
+		f5 *= dayFactor * 0.91F + 0.09F;
+		return Vec3.createVectorHelper(f3, f4, f5);
+	}
 
-        if (dayFactor > 1.0F)
-        {
-            dayFactor = 1.0F;
-        }
+	@Override
+	public double getFuelUsageMultiplier() {
+		return getRelativeGravity();
+	}
 
+	/*
+	 * @Override public boolean hasBreathableAtmosphere() { //return this.isGasPresent(IAtmosphericGas.OXYGEN) && !this.isGasPresent(IAtmosphericGas.CO2); <- WTF return this.isGasPresent(IAtmosphericGas.OXYGEN);
+	 * 
+	 * }
+	 */
 
-        // but why?
-        /**int i = MathHelper.floor_double(cameraEntity.posX);
-        int j = MathHelper.floor_double(cameraEntity.posY);
-        int k = MathHelper.floor_double(cameraEntity.posZ);
-        int l = ForgeHooksClient.getSkyBlendColour(this.worldObj, i, j, k);*/
-        float red = skyColorBase.floatX();//(float)(l >> 16 & 255) / 255.0F;
-        float green = skyColorBase.floatY();//(float)(l >> 8 & 255) / 255.0F;
-        float blue = skyColorBase.floatZ();//(float)(l & 255) / 255.0F;
-        red *= dayFactor;
-        green *= dayFactor;
-        blue *= dayFactor;
-        /*
-        float rainStrength = this.worldObj.getRainStrength(partialTicks);
-        float f8;
-        float f9;
+	@Override
+	public float getGravity() {
+		return 0.08F * (1 - getRelativeGravity());
+	}
 
-        if (rainStrength > 0.0F)
-        {
-            f8 = (red * 0.3F + green * 0.59F + blue * 0.11F) * 0.6F;
-            f9 = 1.0F - rainStrength * 0.75F;
-            red = red * f9 + f8 * (1.0F - f9);
-            green = green * f9 + f8 * (1.0F - f9);
-            blue = blue * f9 + f8 * (1.0F - f9);
-        }
+	/**
+	 * Gravity relative to OW. 1.35 seems to be the last value where you can jump up blocks. walking up stairs seems to work on any gravity
+	 * 
+	 * @return
+	 */
+	protected abstract float getRelativeGravity();
 
-        f8 = this.worldObj.getWeightedThunderStrength(partialTicks);
+	@Override
+	public Vec3 getSkyColor(Entity cameraEntity, float partialTicks) {
+		Vector3 skyColorBase = this.getSkyColor();
+		// return Vec3.createVectorHelper(skyColor.floatX(), skyColor.floatY(), skyColor.floatZ());
+		// return new Vector3(0.60588, 0.7745, 1);
+		float celestialAngle = this.world.getCelestialAngle(partialTicks);
+		float dayFactor = MathHelper.cos(celestialAngle * (float) Math.PI * 2.0F) * 2.0F + 0.5F;
 
-        if (f8 > 0.0F)
-        {
-            f9 = (red * 0.3F + green * 0.59F + blue * 0.11F) * 0.2F;
-            float f10 = 1.0F - f8 * 0.75F;
-            red = red * f10 + f9 * (1.0F - f10);
-            green = green * f10 + f9 * (1.0F - f10);
-            blue = blue * f10 + f9 * (1.0F - f10);
-        }
+		if (dayFactor < 0.0F) {
+			dayFactor = 0.0F;
+		}
 
-        if (this.worldObj.lastLightningBolt > 0)
-        {
-            f9 = (float)this.worldObj.lastLightningBolt - partialTicks;
+		if (dayFactor > 1.0F) {
+			dayFactor = 1.0F;
+		}
 
-            if (f9 > 1.0F)
-            {
-                f9 = 1.0F;
-            }
+		// but why?
+		/**
+		 * int i = MathHelper.floor_double(cameraEntity.posX); int j = MathHelper.floor_double(cameraEntity.posY); int k = MathHelper.floor_double(cameraEntity.posZ); int l = ForgeHooksClient.getSkyBlendColour(this.world, i, j, k);
+		 */
+		float red = skyColorBase.floatX();// (float)(l >> 16 & 255) / 255.0F;
+		float green = skyColorBase.floatY();// (float)(l >> 8 & 255) / 255.0F;
+		float blue = skyColorBase.floatZ();// (float)(l & 255) / 255.0F;
+		red *= dayFactor;
+		green *= dayFactor;
+		blue *= dayFactor;
+		/*
+		 * float rainStrength = this.world.getRainStrength(partialTicks); float f8; float f9;
+		 * 
+		 * if (rainStrength > 0.0F) { f8 = (red * 0.3F + green * 0.59F + blue * 0.11F) * 0.6F; f9 = 1.0F - rainStrength * 0.75F; red = red * f9 + f8 * (1.0F - f9); green = green * f9 + f8 * (1.0F - f9); blue = blue * f9 + f8 * (1.0F - f9); }
+		 * 
+		 * f8 = this.world.getWeightedThunderStrength(partialTicks);
+		 * 
+		 * if (f8 > 0.0F) { f9 = (red * 0.3F + green * 0.59F + blue * 0.11F) * 0.2F; float f10 = 1.0F - f8 * 0.75F; red = red * f10 + f9 * (1.0F - f10); green = green * f10 + f9 * (1.0F - f10); blue = blue * f10 + f9 * (1.0F - f10); }
+		 * 
+		 * if (this.world.lastLightningBolt > 0) { f9 = (float)this.world.lastLightningBolt - partialTicks;
+		 * 
+		 * if (f9 > 1.0F) { f9 = 1.0F; }
+		 * 
+		 * f9 *= 0.45F; red = red * (1.0F - f9) + 0.8F * f9; green = green * (1.0F - f9) + 0.8F * f9; blue = blue * (1.0F - f9) + 1.0F * f9; }
+		 */
 
-            f9 *= 0.45F;
-            red = red * (1.0F - f9) + 0.8F * f9;
-            green = green * (1.0F - f9) + 0.8F * f9;
-            blue = blue * (1.0F - f9) + 1.0F * f9;
-        }*/
+		return Vec3.createVectorHelper(red, green, blue);
+	}
 
-        return Vec3.createVectorHelper(red, green, blue);
-    }
+	@Override
+	public double getSolarEnergyMultiplier() {
+		if (solarLevel < 0) {
+			solarLevel = AstronomyHelper.getSolarEnergyMultiplier(getCelestialBody(), !getCelestialBody().atmosphere.isEmpty());
+		}
+		return solarLevel;
+	}
+	/*
+	 * @SideOnly(Side.CLIENT)
+	 * 
+	 * @Override public Vec3 getFogColor(float var1, float var2) { Vector3 fogColor = this.getFogColor(); return Vec3.createVectorHelper(fogColor.floatX(), fogColor.floatY(), fogColor.floatZ()); }
+	 */
 
-    /**
-     * This is the part which makes the world brighter or dimmer
-     */
-    @SideOnly(Side.CLIENT)
-    @Override
-    public float getSunBrightness(float par1)
-    {
+	@Override
+	public float getSolarSize() {
+		// this works only for planets...
+		CelestialBody body = this.getCelestialBody();
 
-        float factor = worldObj.getSunBrightnessBody(par1) + getAmunBrightnessFactor(par1);
-        if(factor > 1.0F) {
-            factor = 1.0F;
-        }
-        return factor;
-    }
+		if (body instanceof Moon)
+			return 1.0F / ((Moon) body).getParentPlanet().getRelativeDistanceFromCenter().unScaledDistance;
+		return 1.0F / body.getRelativeDistanceFromCenter().unScaledDistance;
+	}
 
-    /**
-     * The current sun brightness factor for this dimension.
-     * 0.0f means no light at all, and 1.0f means maximum sunlight.
-     * This will be used for the "calculateSkylightSubtracted"
-     * which is for Sky light value calculation. No idea what this actually influences
-     *
-     * @return The current brightness factor
-     * */
-    @Override
-    public float getSunBrightnessFactor(float par1)
-    {
-        // I *think* that I could use this to make eclipses etc work
-        float factor = worldObj.getSunBrightnessFactor(par1) + getAmunBrightnessFactor(par1);
+	/**
+	 * This is the part which makes the world brighter or dimmer
+	 */
+	@SideOnly(Side.CLIENT)
+	@Override
+	public float getSunBrightness(float par1) {
 
-        if(factor > 1.0F) {
-            factor = 1.0F;
-        }
+		float factor = world.getSunBrightnessBody(par1) + getAmunBrightnessFactor(par1);
+		if (factor > 1.0F) {
+			factor = 1.0F;
+		}
+		return factor;
+	}
 
-        return factor;
-    }
+	/**
+	 * The current sun brightness factor for this dimension. 0.0f means no light at all, and 1.0f means maximum sunlight. This will be used for the "calculateSkylightSubtracted" which is for Sky light value calculation. No idea what this actually influences
+	 *
+	 * @return The current brightness factor
+	 */
+	@Override
+	public float getSunBrightnessFactor(float par1) {
+		// I *think* that I could use this to make eclipses etc work
+		float factor = world.getSunBrightnessFactor(par1) + getAmunBrightnessFactor(par1);
 
-    protected float getAmunBrightnessFactor(float partialTicks) {
-        CelestialBody curBody = this.getCelestialBody();
-        if(curBody instanceof Moon) {
-            curBody = ((Moon) curBody).getParentPlanet();
-        }
-        AngleDistance ad = AstronomyHelper.projectBodyToSky(curBody, AmunRa.instance.starAmun, partialTicks, this.worldObj.getWorldTime());
-        // ad.angle is in pi
+		if (factor > 1.0F) {
+			factor = 1.0F;
+		}
 
-        // the angle I get is relative to celestialAngle
-        float brightnessFactor = 1.0F - (MathHelper.cos((this.worldObj.getCelestialAngle(partialTicks)) * (float)Math.PI * 2.0F  + ad.angle) * 2.0F + 0.5F);
+		return factor;
+	}
 
-        if(brightnessFactor < 0) {
-            brightnessFactor = 0;
-        }
-        if(brightnessFactor > 1) {
-            brightnessFactor = 1;
-        }
+	public boolean hasAtmosphere() {
+		return this.getCelestialBody().atmosphere.size() > 0;
+	}
 
-        brightnessFactor = 1.0F - brightnessFactor;
+	public boolean hasClouds() {
+		return this.hasAtmosphere();
+	}
 
-        // let's say brightnessFactor == 1 -> 0.5 of brightness
-        return (float) (brightnessFactor * 0.8 / ad.distance);
-    }
+	@Override
+	public boolean isDaytime() {
+		return world.skylightSubtracted < 4;
+	}
+
+	@Override
+	public boolean shouldForceRespawn() {
+		return !ConfigManagerCore.forceOverworldRespawn;
+	}
 }

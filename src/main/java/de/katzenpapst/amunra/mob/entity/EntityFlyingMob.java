@@ -1,299 +1,256 @@
 package de.katzenpapst.amunra.mob.entity;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import micdoodle8.mods.galacticraft.api.entity.IAntiGrav;
 import micdoodle8.mods.galacticraft.api.vector.Vector3;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFlying;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public abstract class EntityFlyingMob extends EntityFlying implements IMob, IAntiGrav {
 
-    public int courseChangeCooldown;
-    public double waypointX;
-    public double waypointY;
-    public double waypointZ;
-    private Entity targetedEntity;
-    /** Cooldown time between target loss and new target aquirement. */
-    private int aggroCooldown;
-    public int prevAttackCounter;
-    public int attackCounter;
-    /** The explosion radius of spawned fireballs. */
-    protected int explosionStrength = 1;
+	protected static final float	distanceToKeep	= 10.0F;
+	public int						courseChangeCooldown;
+	public double					waypointX;
+	public double					waypointY;
+	public double					waypointZ;
+	private Entity					targetedEntity;
+	/** Cooldown time between target loss and new target aquirement. */
+	private int						aggroCooldown;
+	public int						prevAttackCounter;
+	public int						attackCounter;
 
-    protected static final float distanceToKeep = 10.0F;
+	/** The explosion radius of spawned fireballs. */
+	protected int explosionStrength = 1;
 
-    public EntityFlyingMob(World world)
-    {
-        super(world);
-    }
+	public EntityFlyingMob(World world) {
+		super(world);
+	}
 
-    @SideOnly(Side.CLIENT)
-    public boolean useShootingTexture()
-    {
-        // copied over from the ghast. WTF is this?
-        // oh, this seems to be where the renderer decides which texture to use
-        // see net.minecraft.client.renderer.entity.RenderGhast.getEntityTexture(EntityGhast)
-        return this.dataWatcher.getWatchableObjectByte(16) != 0;
-    }
+	/**
+	 * Called when the entity is attacked.
+	 */
+	@Override
+	public boolean attackEntityFrom(DamageSource dmgSrc, float amount) {
+		if (this.isEntityInvulnerable())
+			return false;
+		else
+			return super.attackEntityFrom(dmgSrc, amount);
+	}
 
-    abstract protected float getVisionDistance();
+	@Override
+	protected void entityInit() {
+		super.entityInit();
+		this.dataWatcher.addObject(16, Byte.valueOf((byte) 0));
+	}
 
-    /**
-     * Called when the entity is attacked.
-     */
-    @Override
-    public boolean attackEntityFrom(DamageSource dmgSrc, float amount)
-    {
-        if (this.isEntityInvulnerable())
-        {
-            return false;
-        }
-        else
-        {
-            return super.attackEntityFrom(dmgSrc, amount);
-        }
-    }
+	protected void findWaypoint() {
+		if (this.targetedEntity != null) {
+			// attempt to move closer to the target
+			Vector3 targetVec = new Vector3(targetedEntity);
+			Vector3 myPos = new Vector3(this);
+			Vector3 thisToTarget = myPos.difference(targetVec);
+			// I don't get around sqrt'ing here
+			double distance = thisToTarget.getMagnitude();
+			thisToTarget.scale(distanceToKeep / distance); // scale the vector to distanceToKeep
+			myPos = targetVec.translate(thisToTarget);
+			// this should be correct now...
+			if (this.isCourseTraversable(myPos.x, myPos.y, myPos.z, distance)) {
+				this.waypointX = myPos.x;
+				this.waypointY = myPos.y;
+				this.waypointZ = myPos.z;
+				return;
+			}
+		}
+		// otherwise, get a random point
+		this.waypointX = this.posX + (this.rand.nextFloat() * 2.0F - 1.0F) * 16.0F;
+		this.waypointY = this.posY + (this.rand.nextFloat() * 2.0F - 1.0F) * 16.0F;
+		this.waypointZ = this.posZ + (this.rand.nextFloat() * 2.0F - 1.0F) * 16.0F;
+	}
 
-    @Override
-    protected void entityInit()
-    {
-        super.entityInit();
-        this.dataWatcher.addObject(16, Byte.valueOf((byte)0));
-    }
+	/**
+	 * Checks if the entity's current position is a valid location to spawn this entity.
+	 */
+	@Override
+	public boolean getCanSpawnHere() {
+		return this.rand.nextInt(20) == 0 && super.getCanSpawnHere() && this.world.difficultySetting != EnumDifficulty.PEACEFUL;
+	}
 
+	abstract public String getFiringSound();
 
+	/**
+	 * Will return how many at most can spawn in a chunk at once.
+	 */
+	@Override
+	public int getMaxSpawnedInChunk() {
+		return 1;
+	}
 
-    abstract protected void performAttack(Entity target, double accelX, double accelY, double accelZ);
+	/**
+	 * Returns the volume for the sounds this mob makes.
+	 */
+	@Override
+	protected float getSoundVolume() {
+		return 1.0F;
+	}
 
-    protected void findWaypoint() {
-        if(this.targetedEntity != null) {
-            // attempt to move closer to the target
-            Vector3 targetVec = new Vector3(targetedEntity);
-            Vector3 myPos = new Vector3(this);
-            Vector3 thisToTarget = myPos.difference(targetVec);
-            // I don't get around sqrt'ing here
-            double distance = thisToTarget.getMagnitude();
-            thisToTarget.scale(distanceToKeep / distance); // scale the vector to distanceToKeep
-            myPos = targetVec.translate(thisToTarget);
-            // this should be correct now...
-            if(this.isCourseTraversable(myPos.x, myPos.y, myPos.z, distance)) {
-                this.waypointX = myPos.x;
-                this.waypointY = myPos.y;
-                this.waypointZ = myPos.z;
-                return;
-            }
-        }
-        // otherwise, get a random point
-        this.waypointX = this.posX + (double)((this.rand.nextFloat() * 2.0F - 1.0F) * 16.0F);
-        this.waypointY = this.posY + (double)((this.rand.nextFloat() * 2.0F - 1.0F) * 16.0F);
-        this.waypointZ = this.posZ + (double)((this.rand.nextFloat() * 2.0F - 1.0F) * 16.0F);
-    }
+	abstract protected float getVisionDistance();
 
+	/**
+	 * True if the ghast has an unobstructed line of travel to the waypoint.
+	 */
+	protected boolean isCourseTraversable(double p_70790_1_, double p_70790_3_, double p_70790_5_, double distance) {
+		double relDeltaX = (this.waypointX - this.posX) / distance;
+		double relDeltaY = (this.waypointY - this.posY) / distance;
+		double relDeltaZ = (this.waypointZ - this.posZ) / distance;
+		AxisAlignedBB axisalignedbb = this.boundingBox.copy();
 
-    @Override
-    protected void updateEntityActionState()
-    {
-        if (!this.worldObj.isRemote && this.worldObj.difficultySetting == EnumDifficulty.PEACEFUL)
-        {
-            this.setDead();
-        }
+		for (int i = 1; i < distance; ++i) {
+			axisalignedbb.offset(relDeltaX, relDeltaY, relDeltaZ);
 
-        this.despawnEntity();
-        this.prevAttackCounter = this.attackCounter;
-        double deltaX = this.waypointX - this.posX;
-        double deltaY = this.waypointY - this.posY;
-        double deltaZ = this.waypointZ - this.posZ;
-        double distanceSq = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+			if (!this.world.getCollidingBoundingBoxes(this, axisalignedbb).isEmpty())
+				return false;
+		}
 
-        if (this.targetedEntity != null && this.targetedEntity.isDead)
-        {
-            this.targetedEntity = null;
-        }
+		return true;
+	}
 
-        if (distanceSq < 1.0D || distanceSq > 3600.0D)
-        {
-            // find next waypoint?
-            findWaypoint();
-        }
+	abstract protected void performAttack(Entity target, double accelX, double accelY, double accelZ);
 
-        if (this.courseChangeCooldown-- <= 0)
-        {
-            this.courseChangeCooldown += this.rand.nextInt(5) + 2;
-            distanceSq = (double)MathHelper.sqrt_double(distanceSq);
+	/**
+	 * (abstract) Protected helper method to read subclass entity data from NBT.
+	 */
+	@Override
+	public void readEntityFromNBT(NBTTagCompound nbt) {
+		super.readEntityFromNBT(nbt);
 
-            if (this.isCourseTraversable(this.waypointX, this.waypointY, this.waypointZ, distanceSq))
-            {
-                this.motionX += deltaX / distanceSq * 0.1D;
-                this.motionY += deltaY / distanceSq * 0.1D;
-                this.motionZ += deltaZ / distanceSq * 0.1D;
-            }
-            else
-            {
-                this.waypointX = this.posX;
-                this.waypointY = this.posY;
-                this.waypointZ = this.posZ;
-            }
-        }
+		if (nbt.hasKey("ExplosionPower", 99)) {
+			this.explosionStrength = nbt.getInteger("ExplosionPower");
+		}
+	}
 
-        if (this.targetedEntity == null || this.aggroCooldown-- <= 0)
-        {
-            // target locked?
-            this.targetedEntity = this.worldObj.getClosestVulnerablePlayerToEntity(this, getVisionDistance());
+	@Override
+	protected void updateEntityActionState() {
+		if (!this.world.isRemote && this.world.difficultySetting == EnumDifficulty.PEACEFUL) {
+			this.setDead();
+		}
 
-            if (this.targetedEntity != null)
-            {
-                this.aggroCooldown = 20;
-            }
-        }
+		this.despawnEntity();
+		this.prevAttackCounter = this.attackCounter;
+		double deltaX = this.waypointX - this.posX;
+		double deltaY = this.waypointY - this.posY;
+		double deltaZ = this.waypointZ - this.posZ;
+		double distanceSq = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
 
-        double maxTargetDistance = 64.0D;
+		if (this.targetedEntity != null && this.targetedEntity.isDead) {
+			this.targetedEntity = null;
+		}
 
-        if (this.targetedEntity != null && this.targetedEntity.getDistanceSqToEntity(this) < maxTargetDistance * maxTargetDistance)
-        {
-            this.faceEntity(this.targetedEntity, 10.0F, (float)this.getVerticalFaceSpeed());
-            double accelX = this.targetedEntity.posX - this.posX;
-            double accelY = this.targetedEntity.boundingBox.minY + (double)(this.targetedEntity.height / 2.0F) - (this.posY + (double)(this.height / 2.0F));
-            double accelZ = this.targetedEntity.posZ - this.posZ;
-            this.renderYawOffset = this.rotationYaw = -((float)Math.atan2(accelX, accelZ)) * 180.0F / (float)Math.PI;
+		if (distanceSq < 1.0D || distanceSq > 3600.0D) {
+			// find next waypoint?
+			findWaypoint();
+		}
 
-            if (this.canEntityBeSeen(this.targetedEntity))
-            {
-                if (this.attackCounter == 10)
-                {
-                    // WTF?
-                    // 1007 might be some sort of an ID
-                    // playSoundAtEntity(entity, GalacticraftCore.TEXTURE_PREFIX + "ambience.scaryscape", 9.0F, 1.4F)
-//                    this.worldObj.playSoundAtEntity(this, AmunRa.TEXTUREPREFIX + "mob.sentryblock.fire", 1.0F, 1.0F);
-//                    this.worldObj.playAuxSFXAtEntity((EntityPlayer)null, 1007, (int)this.posX, (int)this.posY, (int)this.posZ, 0);
-                    // charging?
-                }
+		if (this.courseChangeCooldown-- <= 0) {
+			this.courseChangeCooldown += this.rand.nextInt(5) + 2;
+			distanceSq = (double) MathHelper.sqrt_double(distanceSq);
 
-                ++this.attackCounter;
+			if (this.isCourseTraversable(this.waypointX, this.waypointY, this.waypointZ, distanceSq)) {
+				this.motionX += deltaX / distanceSq * 0.1D;
+				this.motionY += deltaY / distanceSq * 0.1D;
+				this.motionZ += deltaZ / distanceSq * 0.1D;
+			} else {
+				this.waypointX = this.posX;
+				this.waypointY = this.posY;
+				this.waypointZ = this.posZ;
+			}
+		}
 
-                if (this.attackCounter == 20)
-                {
-                    // another one. WTF is this?
-                    //this.worldObj.playSoundAtEntity(this, AmunRa.TEXTUREPREFIX + "mob.sentryblock.fire", getSoundVolume(), 1.0F);
-                    this.worldObj.playSoundAtEntity(this, getFiringSound(), getSoundVolume(), 1.0F);
-                    // this.worldObj.playAuxSFXAtEntity((EntityPlayer)null, 1008, (int)this.posX, (int)this.posY, (int)this.posZ, 0);
-                    // this seems to be an actual attack
-                    performAttack(targetedEntity, accelX, accelY, accelZ);
+		if (this.targetedEntity == null || this.aggroCooldown-- <= 0) {
+			// target locked?
+			this.targetedEntity = this.world.getClosestVulnerablePlayerToEntity(this, getVisionDistance());
 
+			if (this.targetedEntity != null) {
+				this.aggroCooldown = 20;
+			}
+		}
 
-                    // actual attack end
-                    this.attackCounter = -40;
-                }
-            }
-            else if (this.attackCounter > 0)
-            {
-                --this.attackCounter;
-            }
-        }
-        else
-        {
-            this.rotationPitch = this.defaultPitch;
-            this.renderYawOffset = this.rotationYaw = -((float)Math.atan2(this.motionX, this.motionZ)) * 180.0F / (float)Math.PI;
+		double maxTargetDistance = 64.0D;
 
-            if (this.attackCounter > 0)
-            {
-                --this.attackCounter;
-            }
-        }
+		if (this.targetedEntity != null && this.targetedEntity.getDistanceSqToEntity(this) < maxTargetDistance * maxTargetDistance) {
+			this.faceEntity(this.targetedEntity, 10.0F, this.getVerticalFaceSpeed());
+			double accelX = this.targetedEntity.posX - this.posX;
+			double accelY = this.targetedEntity.boundingBox.minY + this.targetedEntity.height / 2.0F - (this.posY + this.height / 2.0F);
+			double accelZ = this.targetedEntity.posZ - this.posZ;
+			this.renderYawOffset = this.rotationYaw = -((float) Math.atan2(accelX, accelZ)) * 180.0F / (float) Math.PI;
 
-        if (!this.worldObj.isRemote)
-        {
-            byte b1 = this.dataWatcher.getWatchableObjectByte(16);
-            byte b0 = (byte)(this.attackCounter > 10 ? 1 : 0);
+			if (this.canEntityBeSeen(this.targetedEntity)) {
+				if (this.attackCounter == 10) {
+					// WTF?
+					// 1007 might be some sort of an ID
+					// playSoundAtEntity(entity, Constants.TEXTURE_PREFIX + "ambience.scaryscape", 9.0F, 1.4F)
+//                    this.world.playSoundAtEntity(this, AmunRa.TEXTUREPREFIX + "mob.sentryblock.fire", 1.0F, 1.0F);
+//                    this.world.playAuxSFXAtEntity((EntityPlayer)null, 1007, (int)this.posX, (int)this.posY, (int)this.posZ, 0);
+					// charging?
+				}
 
-            if (b1 != b0)
-            {
-                this.dataWatcher.updateObject(16, Byte.valueOf(b0));
-            }
-        }
-    }
+				++this.attackCounter;
 
-    /**
-     * True if the ghast has an unobstructed line of travel to the waypoint.
-     */
-    protected boolean isCourseTraversable(double p_70790_1_, double p_70790_3_, double p_70790_5_, double distance)
-    {
-        double relDeltaX = (this.waypointX - this.posX) / distance;
-        double relDeltaY = (this.waypointY - this.posY) / distance;
-        double relDeltaZ = (this.waypointZ - this.posZ) / distance;
-        AxisAlignedBB axisalignedbb = this.boundingBox.copy();
+				if (this.attackCounter == 20) {
+					// another one. WTF is this?
+					// this.world.playSoundAtEntity(this, AmunRa.TEXTUREPREFIX + "mob.sentryblock.fire", getSoundVolume(), 1.0F);
+					this.world.playSoundAtEntity(this, getFiringSound(), getSoundVolume(), 1.0F);
+					// this.world.playAuxSFXAtEntity((EntityPlayer)null, 1008, (int)this.posX, (int)this.posY, (int)this.posZ, 0);
+					// this seems to be an actual attack
+					performAttack(targetedEntity, accelX, accelY, accelZ);
 
-        for (int i = 1; (double)i < distance; ++i)
-        {
-            axisalignedbb.offset(relDeltaX, relDeltaY, relDeltaZ);
+					// actual attack end
+					this.attackCounter = -40;
+				}
+			} else if (this.attackCounter > 0) {
+				--this.attackCounter;
+			}
+		} else {
+			this.rotationPitch = this.defaultPitch;
+			this.renderYawOffset = this.rotationYaw = -((float) Math.atan2(this.motionX, this.motionZ)) * 180.0F / (float) Math.PI;
 
-            if (!this.worldObj.getCollidingBoundingBoxes(this, axisalignedbb).isEmpty())
-            {
-                return false;
-            }
-        }
+			if (this.attackCounter > 0) {
+				--this.attackCounter;
+			}
+		}
 
-        return true;
-    }
+		if (!this.world.isRemote) {
+			byte b1 = this.dataWatcher.getWatchableObjectByte(16);
+			byte b0 = (byte) (this.attackCounter > 10 ? 1 : 0);
 
-    /**
-     * Returns the volume for the sounds this mob makes.
-     */
-    @Override
-    protected float getSoundVolume()
-    {
-        return 1.0F;
-    }
+			if (b1 != b0) {
+				this.dataWatcher.updateObject(16, Byte.valueOf(b0));
+			}
+		}
+	}
 
-    /**
-     * Checks if the entity's current position is a valid location to spawn this entity.
-     */
-    @Override
-    public boolean getCanSpawnHere()
-    {
-        return this.rand.nextInt(20) == 0 && super.getCanSpawnHere() && this.worldObj.difficultySetting != EnumDifficulty.PEACEFUL;
-    }
+	@SideOnly(Side.CLIENT)
+	public boolean useShootingTexture() {
+		// copied over from the ghast. WTF is this?
+		// oh, this seems to be where the renderer decides which texture to use
+		// see net.minecraft.client.renderer.entity.RenderGhast.getEntityTexture(EntityGhast)
+		return this.dataWatcher.getWatchableObjectByte(16) != 0;
+	}
 
-    /**
-     * Will return how many at most can spawn in a chunk at once.
-     */
-    @Override
-    public int getMaxSpawnedInChunk()
-    {
-        return 1;
-    }
-
-    abstract public String getFiringSound();
-
-    /**
-     * (abstract) Protected helper method to write subclass entity data to NBT.
-     */
-    @Override
-    public void writeEntityToNBT(NBTTagCompound nbt)
-    {
-        super.writeEntityToNBT(nbt);
-        nbt.setInteger("ExplosionPower", this.explosionStrength);
-    }
-
-    /**
-     * (abstract) Protected helper method to read subclass entity data from NBT.
-     */
-    @Override
-    public void readEntityFromNBT(NBTTagCompound nbt)
-    {
-        super.readEntityFromNBT(nbt);
-
-        if (nbt.hasKey("ExplosionPower", 99))
-        {
-            this.explosionStrength = nbt.getInteger("ExplosionPower");
-        }
-    }
+	/**
+	 * (abstract) Protected helper method to write subclass entity data to NBT.
+	 */
+	@Override
+	public void writeEntityToNBT(NBTTagCompound nbt) {
+		super.writeEntityToNBT(nbt);
+		nbt.setInteger("ExplosionPower", this.explosionStrength);
+	}
 
 }

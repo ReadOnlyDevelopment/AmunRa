@@ -1,8 +1,8 @@
 [
 {
-  "modid": "GalacticraftAmunRa",
-  "name": "Pra's Galacticraft Mod",
-  "description": "Trying out some stuff",
+  "modid": "amunra",
+  "name": "Amun-Ra Rising",
+  "description": "Port of Pra's AmunRa from 1.7",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",

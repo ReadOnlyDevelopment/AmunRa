@@ -13,61 +13,59 @@ import net.minecraft.world.World;
 
 /**
  * This is my version of EntityCelestialFake, for special stuff
+ * 
  * @author katzenpapst
- *
  */
 public class EntityShuttleFake extends EntityCelestialFake {
 
-    private String cachedDimList = null;
+	private String cachedDimList = null;
 
-    public EntityShuttleFake(World world) {
-        super(world);
-    }
+	public EntityShuttleFake(EntityPlayerMP player, float yOffset) {
+		super(player, yOffset);
+	}
 
-    public EntityShuttleFake(World world, float yOffset) {
-        super(world, yOffset);
-    }
+	public EntityShuttleFake(World world) {
+		super(world);
+	}
 
-    public EntityShuttleFake(EntityPlayerMP player, float yOffset) {
-        super(player, yOffset);
-    }
+	public EntityShuttleFake(World world, double x, double y, double z, float yOffset) {
+		super(world, x, y, z, yOffset);
+	}
 
-    public EntityShuttleFake(World world, double x, double y, double z, float yOffset) {
-        super(world, x, y, z, yOffset);
-    }
+	public EntityShuttleFake(World world, float yOffset) {
+		super(world, yOffset);
+	}
 
-    @Override
-    public void onUpdate()
-    {
-        // stuff
-        if(!this.worldObj.isRemote) {
-            if(ticks % 40 == 0) {
-                if(this.riddenByEntity != null && this.riddenByEntity instanceof EntityPlayerMP) {
-                    //System.out.println("would send");
-                    // try packet spam
-                    EntityPlayerMP player = (EntityPlayerMP)this.riddenByEntity;
+	private String getDimList(EntityPlayerMP player) {
+		HashMap<String, Integer> map = ShuttleTeleportHelper.getArrayOfPossibleDimensions(player);
+		String dimensionList = "";
+		int count = 0;
+		for (Entry<String, Integer> entry : map.entrySet()) {
+			dimensionList = dimensionList.concat(entry.getKey() + (count < map.entrySet().size() - 1 ? "?" : ""));
+			count++;
+		}
+		return dimensionList;
+	}
 
-                    if(ticks % 160 == 0 || cachedDimList == null) {
-                        //System.out.println("would update&send");
-                        cachedDimList = getDimList(player);
-                    }
+	@Override
+	public void onUpdate() {
+		// stuff
+		if (!this.world.isRemote) {
+			if (ticks % 40 == 0) {
+				if (this.riddenByEntity != null && this.riddenByEntity instanceof EntityPlayerMP) {
+					// System.out.println("would send");
+					// try packet spam
+					EntityPlayerMP player = (EntityPlayerMP) this.riddenByEntity;
 
-                    AmunRa.packetPipeline.sendTo(new PacketSimpleAR(EnumSimplePacket.C_OPEN_SHUTTLE_GUI, player.getGameProfile().getName(), cachedDimList), player);
-                }
-            }
-        }
-        super.onUpdate();
-    }
+					if (ticks % 160 == 0 || cachedDimList == null) {
+						// System.out.println("would update&send");
+						cachedDimList = getDimList(player);
+					}
 
-    private String getDimList(EntityPlayerMP player) {
-        HashMap<String, Integer> map = ShuttleTeleportHelper.getArrayOfPossibleDimensions(player);
-        String dimensionList = "";
-        int count = 0;
-        for (Entry<String, Integer> entry : map.entrySet())
-        {
-            dimensionList = dimensionList.concat(entry.getKey() + (count < map.entrySet().size() - 1 ? "?" : ""));
-            count++;
-        }
-        return dimensionList;
-    }
+					AmunRa.packetPipeline.sendTo(new PacketSimpleAR(EnumSimplePacket.C_OPEN_SHUTTLE_GUI, player.getGameProfile().getName(), cachedDimList), player);
+				}
+			}
+		}
+		super.onUpdate();
+	}
 }

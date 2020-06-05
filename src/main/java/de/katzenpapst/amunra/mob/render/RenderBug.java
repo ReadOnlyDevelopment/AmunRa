@@ -11,21 +11,20 @@ import net.minecraft.util.ResourceLocation;
 
 public class RenderBug extends RenderLiving {
 
-    protected static final ResourceLocation tex = new ResourceLocation(AmunRa.ASSETPREFIX, "textures/entity/bug.png");
+	protected static final ResourceLocation tex = new ResourceLocation(AmunRa.ASSETPREFIX, "textures/entity/bug.png");
 
-    public RenderBug() {
-        super(new ModelBug(), 1.0F);
-    }
+	public RenderBug() {
+		super(new ModelBug(), 1.0F);
+	}
 
-    @Override
-    protected ResourceLocation getEntityTexture(Entity ent) {
-        return tex;
-    }
+	@Override
+	protected ResourceLocation getEntityTexture(Entity ent) {
+		return tex;
+	}
 
-    @Override
-    protected void preRenderCallback(EntityLivingBase entity, float partialTickTime)
-    {
-        GL11.glTranslated(0.0, 1.1, 0.0);
-    }
+	@Override
+	protected void preRenderCallback(EntityLivingBase entity, float partialTickTime) {
+		GL11.glTranslated(0.0, 1.1, 0.0);
+	}
 
 }

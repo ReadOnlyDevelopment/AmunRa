@@ -7,14 +7,14 @@ import net.minecraft.world.World;
 
 public class MothershipChunkProvider extends ChunkProviderOrbit { // for now, just like this
 
-    protected final Random rand;
-    // ...sigh...
-    protected final World worldObjNonPrivate;
+	protected final Random rand;
+	// ...sigh...
+	protected final World worldNonPrivate;
 
-    public MothershipChunkProvider(World par1World, long par2, boolean par4) {
-        super(par1World, par2, par4);
-        this.rand = new Random(par2);
-        worldObjNonPrivate = par1World;
-    }
+	public MothershipChunkProvider(World par1World, long par2, boolean par4) {
+		super(par1World, par2, par4);
+		this.rand = new Random(par2);
+		worldNonPrivate = par1World;
+	}
 
 }

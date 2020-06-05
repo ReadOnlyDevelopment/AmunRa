@@ -16,19 +16,12 @@ public class AmunraBiomeDecorator extends BiomeDecoratorSpace {
 	}
 
 	@Override
-	protected void setCurrentWorld(World world) {
-		mWorld = world;
+	protected void decorate() {
 
-		oreGenList = getOreGenerators();
-	}
+		for (WorldGenOre oreGen : oreGenList) {
+			this.generateOre(oreGen.amountPerChunk, oreGen, oreGen.minY, oreGen.maxY);
+		}
 
-	/**
-	 * Override and return a list of ore generators.
-	 * @return
-	 */
-	protected List<WorldGenOre> getOreGenerators()
-	{
-		return new ArrayList<WorldGenOre>();
 	}
 
 	@Override
@@ -36,13 +29,20 @@ public class AmunraBiomeDecorator extends BiomeDecoratorSpace {
 		return mWorld;
 	}
 
+	/**
+	 * Override and return a list of ore generators.
+	 * 
+	 * @return
+	 */
+	protected List<WorldGenOre> getOreGenerators() {
+		return new ArrayList<WorldGenOre>();
+	}
+
 	@Override
-	protected void decorate() {
+	protected void setCurrentWorld(World world) {
+		mWorld = world;
 
-		for(WorldGenOre oreGen: oreGenList) {
-			this.generateOre(oreGen.amountPerChunk, oreGen, oreGen.minY, oreGen.maxY);
-		}
-
+		oreGenList = getOreGenerators();
 	}
 
 }

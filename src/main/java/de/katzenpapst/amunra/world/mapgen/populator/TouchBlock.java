@@ -3,10 +3,9 @@ package de.katzenpapst.amunra.world.mapgen.populator;
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+
 /**
- *
  * Triggers a block update
- *
  */
 public class TouchBlock extends AbstractPopulator {
 

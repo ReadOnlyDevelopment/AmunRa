@@ -13,29 +13,26 @@ import net.minecraft.util.ResourceLocation;
 
 public class RenderFirstBoss extends RenderBiped {
 
-    private static final ResourceLocation zombieTextures = new ResourceLocation(AmunRa.ASSETPREFIX, "textures/entity/mummy.png");
+	private static final ResourceLocation zombieTextures = new ResourceLocation(AmunRa.ASSETPREFIX, "textures/entity/mummy.png");
 
-    public RenderFirstBoss() {
-        super(new ModelFirstBoss(), 1.0F);
-    }
+	public RenderFirstBoss() {
+		super(new ModelFirstBoss(), 1.0F);
+	}
 
-    @Override
-    protected void preRenderCallback(EntityLivingBase par1EntityLiving, float par2)
-    {
-        GL11.glScalef(2.5F, 2.5F, 2.5F);
-    }
+	@Override
+	public void doRender(EntityLiving par1EntityLiving, double par2, double par4, double par6, float par8, float par9) {
+		BossStatus.setBossStatus((IBossDisplayData) par1EntityLiving, false);
 
-    @Override
-    public void doRender(EntityLiving par1EntityLiving, double par2, double par4, double par6, float par8, float par9)
-    {
-        BossStatus.setBossStatus((IBossDisplayData) par1EntityLiving, false);
+		super.doRender(par1EntityLiving, par2, par4, par6, par8, par9);
+	}
 
-        super.doRender(par1EntityLiving, par2, par4, par6, par8, par9);
-    }
+	@Override
+	protected ResourceLocation getEntityTexture(EntityLiving e) {
+		return zombieTextures;
+	}
 
-    @Override
-    protected ResourceLocation getEntityTexture(EntityLiving e)
-    {
-        return zombieTextures;
-    }
+	@Override
+	protected void preRenderCallback(EntityLivingBase par1EntityLiving, float par2) {
+		GL11.glScalef(2.5F, 2.5F, 2.5F);
+	}
 }

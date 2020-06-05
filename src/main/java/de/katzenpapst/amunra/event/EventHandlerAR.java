@@ -1,9 +1,9 @@
 package de.katzenpapst.amunra.event;
 
 import de.katzenpapst.amunra.AmunRa;
-import de.katzenpapst.amunra.item.ItemThermalSuit;
 import de.katzenpapst.amunra.mob.DamageSourceAR;
 import de.katzenpapst.amunra.mob.entity.IEntityNonOxygenBreather;
+import de.katzenpapst.amunra.old.item.ItemThermalSuit;
 import micdoodle8.mods.galacticraft.api.event.ZeroGravityEvent;
 import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody;
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider;
@@ -19,68 +19,59 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class EventHandlerAR {
 
-    @SubscribeEvent
-    public void entityLivingEvent(LivingUpdateEvent event)
-    {
-        EntityLivingBase entityLiving = event.entityLiving;
-        if(!(entityLiving instanceof IEntityNonOxygenBreather)) {
-            return;
-        }
+	@SubscribeEvent
+	public void entityLivingEvent(LivingUpdateEvent event) {
+		EntityLivingBase entityLiving = event.entityLiving;
+		if (!(entityLiving instanceof IEntityNonOxygenBreather))
+			return;
 
-        if (entityLiving.ticksExisted % 100 == 0)
-        {
-            CelestialBody body;
-            boolean isInSealedArea = OxygenUtil.isAABBInBreathableAirBlock(entityLiving);
+		if (entityLiving.ticksExisted % 100 == 0) {
+			CelestialBody body;
+			boolean isInSealedArea = OxygenUtil.isAABBInBreathableAirBlock(entityLiving);
 
-            if (entityLiving.worldObj.provider instanceof IGalacticraftWorldProvider) {
-                body = ((IGalacticraftWorldProvider)entityLiving.worldObj.provider).getCelestialBody();
-            } else {
-                body = GalacticraftCore.planetOverworld;
-            }
-            if(!((IEntityNonOxygenBreather)entityLiving).canBreatheIn(body.atmosphere, isInSealedArea)) {
-                // should I add these events about suffocation that GC does?
-                entityLiving.attackEntityFrom(DamageSourceAR.dsSuffocate, 1);
-            }
-        }
-    }
+			if (entityLiving.world.provider instanceof IGalacticraftWorldProvider) {
+				body = ((IGalacticraftWorldProvider) entityLiving.world.provider).getCelestialBody();
+			} else {
+				body = GalacticraftCore.planetOverworld;
+			}
+			if (!((IEntityNonOxygenBreather) entityLiving).canBreatheIn(body.atmosphere, isInSealedArea)) {
+				// should I add these events about suffocation that GC does?
+				entityLiving.attackEntityFrom(DamageSourceAR.dsSuffocate, 1);
+			}
+		}
+	}
 
-    @SubscribeEvent
-    public void onThermalArmorEvent(ThermalArmorEvent event)
-    {
-        // I sure hope this works with other mods...
+	// gravity events. these should be client-only
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onGravityEvent(ZeroGravityEvent.InFreefall event) {
+		this.provessGravityEvent(event);
+	}
 
-        if (event.armorStack != null && event.armorStack.getItem() instanceof ItemThermalSuit)
-        {
-            event.setArmorAddResult(ThermalArmorEvent.ArmorAddResult.ADD);
-            return;
-        }
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onGravityEvent(ZeroGravityEvent.Motion event) {
+		this.provessGravityEvent(event);
+	}
 
-    }
+	@SubscribeEvent
+	public void onThermalArmorEvent(ThermalArmorEvent event) {
+		// I sure hope this works with other mods...
 
-    @SideOnly(Side.CLIENT)
-    private void provessGravityEvent(ZeroGravityEvent event)
-    {
-        if(!(event.entity instanceof EntityPlayer)) {
-            return;
-        }
-        if(AmunRa.proxy.doCancelGravityEvent((EntityPlayer) event.entity)) {
-            event.setCanceled(true);
-        }
+		if (event.armorStack != null && event.armorStack.getItem() instanceof ItemThermalSuit) {
+			event.setArmorAddResult(ThermalArmorEvent.ArmorAddResult.ADD);
+			return;
+		}
 
-    }
+	}
 
-    // gravity events. these should be client-only
-    @SideOnly(Side.CLIENT)
-    @SubscribeEvent
-    public void onGravityEvent(ZeroGravityEvent.InFreefall event)
-    {
-        this.provessGravityEvent(event);
-    }
+	@SideOnly(Side.CLIENT)
+	private void provessGravityEvent(ZeroGravityEvent event) {
+		if (!(event.entity instanceof EntityPlayer))
+			return;
+		if (AmunRa.proxy.doCancelGravityEvent((EntityPlayer) event.entity)) {
+			event.setCanceled(true);
+		}
 
-    @SideOnly(Side.CLIENT)
-    @SubscribeEvent
-    public void onGravityEvent(ZeroGravityEvent.Motion event)
-    {
-        this.provessGravityEvent(event);
-    }
+	}
 }

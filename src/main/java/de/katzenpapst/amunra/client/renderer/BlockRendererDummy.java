@@ -1,11 +1,11 @@
 package de.katzenpapst.amunra.client.renderer;
 
-import net.minecraftforge.fml.client.registry.ISimpleBlockRenderingHandler;
-import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import de.katzenpapst.amunra.AmunRa;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.fml.client.registry.ISimpleBlockRenderingHandler;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
 
 /**
  * A renderer to simply don't render blocks, for when the tile entity is supposed to do the rendering

@@ -1,16 +1,16 @@
 package de.katzenpapst.amunra.mob.entity;
 
-import de.katzenpapst.amunra.tile.ITileDungeonSpawner;
-import net.minecraft.util.AxisAlignedBB;
+import de.katzenpapst.amunra.old.tile.ITileDungeonSpawner;
+import net.minecraft.util.math.AxisAlignedBB;
 
 public interface IAmunRaBoss {
-    public void setSpawner(ITileDungeonSpawner spawner);
+	public void despawnBoss();
 
-    public ITileDungeonSpawner getSpawner();
+	public AxisAlignedBB getRoomArea();
 
-    public void setRoomArea(AxisAlignedBB aabb);
+	public ITileDungeonSpawner getSpawner();
 
-    public AxisAlignedBB getRoomArea();
+	public void setRoomArea(AxisAlignedBB aabb);
 
-    public void despawnBoss();
+	public void setSpawner(ITileDungeonSpawner spawner);
 }

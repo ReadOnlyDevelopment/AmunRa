@@ -23,321 +23,278 @@ import net.minecraftforge.fml.relauncher.FMLRelaunchLog;
 
 public class ARConfig {
 
-    // ** dimension IDs **
-    public int dimNeper     = 20;
-    public int dimMaahes    = 21;
-    public int dimAnubis    = 22;
-    public int dimHorus     = 23;
-    public int dimSeth      = 24;
-    public int dimMehen     = 25;
+	// ** dimension IDs **
+	public int	dimNeper	= 20;
+	public int	dimMaahes	= 21;
+	public int	dimAnubis	= 22;
+	public int	dimHorus	= 23;
+	public int	dimSeth		= 24;
+	public int	dimMehen	= 25;
 
-    // default tier for my planets and moons
-    public int planetDefaultTier = 3;
+	// default tier for my planets and moons
+	public int planetDefaultTier = 3;
 
-    public boolean villageAdvancedMachines = false;
+	public boolean villageAdvancedMachines = false;
 
-    // ** motherships **
-    public int maxNumMotherships = -1;
-    public int mothershipMaxTier = 10;
-    public int mothershipProviderID = -39;
+	// ** motherships **
+	public int	maxNumMotherships		= -1;
+	public int	mothershipMaxTier		= 10;
+	public int	mothershipProviderID	= -39;
 
-    // motherships will refuse to start transit, if the time is > than this
-    public int mothershipMaxTravelTime = 24000;
+	// motherships will refuse to start transit, if the time is > than this
+	public int mothershipMaxTravelTime = 24000;
 
-    public float mothershipSpeedFactor = 1.0F;
+	public float mothershipSpeedFactor = 1.0F;
 
-    public float mothershipFuelFactor = 1.0F;
+	public float mothershipFuelFactor = 1.0F;
 
-    // bodies which motherships cannot orbit
-    public Set<String> mothershipBodiesNoOrbit;
+	// bodies which motherships cannot orbit
+	public Set<String> mothershipBodiesNoOrbit;
 
-    // *** sky rendering and related ***
-    // bodies not to render
-    public Set<String> bodiesNoRender;
+	// *** sky rendering and related ***
+	// bodies not to render
+	public Set<String> bodiesNoRender;
 
-    public Set<String> asteroidBeltBodies;
+	public Set<String> asteroidBeltBodies;
 
-    // star lines for transit sky
-    public int mothershipNumStarLines = 400;
+	// star lines for transit sky
+	public int mothershipNumStarLines = 400;
 
-    public int numAsteroids = 600;
+	public int numAsteroids = 600;
 
-    // bodies to render as suns
-    public HashMap<String, Vector3> sunColorMap = new HashMap<String, Vector3>();
+	// bodies to render as suns
+	public HashMap<String, Vector3> sunColorMap = new HashMap<String, Vector3>();
 
-    public HashMap<String, RingsRenderInfo> ringMap = new HashMap<String, RingsRenderInfo>();
+	public HashMap<String, RingsRenderInfo> ringMap = new HashMap<String, RingsRenderInfo>();
 
-    // ** IDs **
-    public int schematicIdShuttle = 11;
+	// ** IDs **
+	public int schematicIdShuttle = 11;
 
-    public int guiIdShuttle = 8;
+	public int guiIdShuttle = 8;
 
-    public float hydroponicsFactor = 1.0F;
+	public float hydroponicsFactor = 1.0F;
 
+	// ** extra default stuff **
+	private final String[] defaultExtraSuns = { "tbn36b:0/0.1/1", "selpin:0/0.1/1", "tbn36a:1/0/0", "centaurib:1/0.7/0.8", "vega:0.8/0.8/1", "sirius:0.6/0.8/1", "siriusb:1/1/1", "dark:0.1/0.1/0.1", "kapteyn:0.70/0.1/0.1" };
 
-    // ** extra default stuff **
-    private final String[] defaultExtraSuns = {
-        "tbn36b:0/0.1/1",
-        "selpin:0/0.1/1",
-        "tbn36a:1/0/0",
-        "centaurib:1/0.7/0.8",
-        "vega:0.8/0.8/1",
-        "sirius:0.6/0.8/1",
-        "siriusb:1/1/1",
-        "dark:0.1/0.1/0.1",
-        "kapteyn:0.70/0.1/0.1"
-    };
+	private final String[] defaultPlanetsWithRings = { "barnarda5:171:301:galaxyspace:textures/gui/celestialbodies/barnardaRings.png", "barnarda6:177:305:galaxyspace:textures/gui/celestialbodies/barnardaRings2.png", "appleapachia:8:20:extendedplanets:textures/gui/celestialbodies/appleapachiaRings.png" };
 
-    private final String[] defaultPlanetsWithRings = {
-        "barnarda5:171:301:galaxyspace:textures/gui/celestialbodies/barnardaRings.png",
-        "barnarda6:177:305:galaxyspace:textures/gui/celestialbodies/barnardaRings2.png",
-        "appleapachia:8:20:extendedplanets:textures/gui/celestialbodies/appleapachiaRings.png"
-    };
+	private final String[] defaultAsteroidBelts = { "okblekbelt", "saturnrings" };
 
-    private final String[] defaultAsteroidBelts = {
-        "okblekbelt",
-        "saturnrings"
-    };
+	// public boolean mothershipUserRestriction = true;
 
-    //public boolean mothershipUserRestriction = true;
+	public boolean mothershipUserMatchUUID = true;
 
-    public boolean mothershipUserMatchUUID = true;
+	public ARConfig() {
+	}
 
-    public ARConfig() { }
+	private HashSet<String> configGetStringHashSet(Configuration config, String name, String category, String[] defaultValues, String comment) {
+		String[] data = config.getStringList(name, category, defaultValues, comment);
+		HashSet<String> result = new HashSet<String>();
+		for (String str : data) {
+			result.add(str);
+		}
+		return result;
+	}
 
-    public void processConfig(Configuration config) {
+	public NBTTagCompound getServerOverrideData() {
+		NBTTagCompound data = new NBTTagCompound();
 
+		// now what do I need?
+		// - not the dim IDs
+		// - not the client stuff
 
-        config.load();
-        String[] emptySet = {};
+		data.setInteger("maxNumMotherships", maxNumMotherships);
 
-        // Configuration goes here.
-        //config.getInt(name, category, defaultValue, minValue, maxValue, comment)
-        dimNeper    = config.get("dimension_ids", "Neper",  dimNeper).getInt();
-        dimMaahes   = config.get("dimension_ids", "Maahes", dimMaahes).getInt();
-        dimAnubis   = config.get("dimension_ids", "Anubis", dimAnubis).getInt();
-        dimHorus    = config.get("dimension_ids", "Horus",  dimHorus).getInt();
-        dimSeth     = config.get("dimension_ids", "Seth",   dimSeth).getInt();
-        dimMehen    = config.get("dimension_ids", "Mehen",  dimMehen).getInt();
+		// data.set
+		NBTTagList bodiesNoList = new NBTTagList();
+		for (String s : mothershipBodiesNoOrbit) {
+			NBTTagString strTag = new NBTTagString(s);
+			// strTag.func_150285_a_();
+			bodiesNoList.appendTag(strTag);
+		}
+		data.setTag("msBodiesNoOrbit", bodiesNoList);
 
-        // villages
-        villageAdvancedMachines = config.get("villages", "UseAdvancedMachines", false,
-                "If true, robot villages will have advanced solar collectors, storage clusters and heavy wires").getBoolean();
+		data.setInteger("msMaxTier", mothershipMaxTier);
+		data.setInteger("msMaxTravelTime", mothershipMaxTravelTime);
+		data.setFloat("msFuelFactor", mothershipFuelFactor);
+		data.setFloat("msSpeedFactor", mothershipSpeedFactor);
+		data.setBoolean("msMatchUUID", mothershipUserMatchUUID);
+		data.setInteger("planetDefaultTier", planetDefaultTier);
 
-        // general
-        planetDefaultTier = config.getInt("default_tier", "general", planetDefaultTier, 0, 1000,
-                "Default tier for AmunRa planets and moons");
+		return data;
+	}
 
-        hydroponicsFactor = config.getFloat("hydroponicsFactor", "general", hydroponicsFactor, Float.MIN_VALUE, Float.MAX_VALUE,
-                "Multiplier for the oxygen production of the hydroponics unit");
+	public boolean isAsteroidBelt(CelestialBody body) {
+		return asteroidBeltBodies.contains(body.getName());
+	}
 
+	public boolean isSun(CelestialBody body) {
+		return sunColorMap.containsKey(body.getName());
+	}
 
-        // motherships
-        maxNumMotherships = config.getInt("numMothershipsPerPlayer", "motherships", maxNumMotherships, -1, 1000,
-                "Maximal amount of motherships one single player can have. Set to -1 to remove the restriction.");
+	public void processConfig(Configuration config) {
 
-        mothershipProviderID = config.getInt("mothershipProviderID", "motherships", mothershipProviderID, Integer.MIN_VALUE, Integer.MAX_VALUE,
-                "ID for the Mothership World Provider");
+		config.load();
+		String[] emptySet = {};
 
-        mothershipMaxTier = config.getInt("maxMothershipTier", "motherships", mothershipMaxTier, 1, Integer.MAX_VALUE,
-                "Maximal tier which can be reached from a mothership. Motherships will pretty much ignore the tier system otherwise.");
+		// Configuration goes here.
+		// config.getInt(name, category, defaultValue, minValue, maxValue, comment)
+		dimNeper = config.get("dimension_ids", "Neper", dimNeper).getInt();
+		dimMaahes = config.get("dimension_ids", "Maahes", dimMaahes).getInt();
+		dimAnubis = config.get("dimension_ids", "Anubis", dimAnubis).getInt();
+		dimHorus = config.get("dimension_ids", "Horus", dimHorus).getInt();
+		dimSeth = config.get("dimension_ids", "Seth", dimSeth).getInt();
+		dimMehen = config.get("dimension_ids", "Mehen", dimMehen).getInt();
 
-        mothershipMaxTravelTime = config.getInt("maxMothershipTravelTime", "motherships", mothershipMaxTravelTime, 1, Integer.MAX_VALUE,
-                "Maximal travel time (in ticks) for a mothership. Destinations with a longer travel time are unreachable. 24000 = one Overworld day");
+		// villages
+		villageAdvancedMachines = config.get("villages", "UseAdvancedMachines", false, "If true, robot villages will have advanced solar collectors, storage clusters and heavy wires").getBoolean();
 
-        mothershipSpeedFactor = config.getFloat("mothershipSpeedFactor", "motherships", mothershipSpeedFactor, Float.MIN_VALUE, Float.MAX_VALUE,
-                "A factor to be multiplied onto the mothership speed. Higher values = faster motherships.");
+		// general
+		planetDefaultTier = config.getInt("default_tier", "general", planetDefaultTier, 0, 1000, "Default tier for AmunRa planets and moons");
 
-        mothershipFuelFactor = config.getFloat("mothershipFuelFactor", "motherships", mothershipFuelFactor, Float.MIN_VALUE, Float.MAX_VALUE,
-                "A factor to be multiplied onto the fuel usages of mothership engines. Higher values = higher fuel usage");
+		hydroponicsFactor = config.getFloat("hydroponicsFactor", "general", hydroponicsFactor, Float.MIN_VALUE, Float.MAX_VALUE, "Multiplier for the oxygen production of the hydroponics unit");
 
-        mothershipBodiesNoOrbit = configGetStringHashSet(config, "bodiesNoOrbit", "motherships", emptySet, "Bodies which should not be orbitable by motherships");
+		// motherships
+		maxNumMotherships = config.getInt("numMothershipsPerPlayer", "motherships", maxNumMotherships, -1, 1000, "Maximal amount of motherships one single player can have. Set to -1 to remove the restriction.");
 
-        //mothershipUserRestriction = config.getBoolean("restrictMothershipToOwner", "mothership", true, "If true, only the one who built the mothership will be able to use it. If false, anyone can");
+		mothershipProviderID = config.getInt("mothershipProviderID", "motherships", mothershipProviderID, Integer.MIN_VALUE, Integer.MAX_VALUE, "ID for the Mothership World Provider");
 
-        mothershipUserMatchUUID = config.getBoolean("matchUsersByUUID", "mothership", mothershipUserMatchUUID, "If true, users will be identified by UUID, if false by username. You will probably only want the latter if you run an 'offline' server...");
+		mothershipMaxTier = config.getInt("maxMothershipTier", "motherships", mothershipMaxTier, 1, Integer.MAX_VALUE, "Maximal tier which can be reached from a mothership. Motherships will pretty much ignore the tier system otherwise.");
 
+		mothershipMaxTravelTime = config.getInt("maxMothershipTravelTime", "motherships", mothershipMaxTravelTime, 1, Integer.MAX_VALUE, "Maximal travel time (in ticks) for a mothership. Destinations with a longer travel time are unreachable. 24000 = one Overworld day");
 
-        // rendering
-        mothershipNumStarLines = config.getInt("mothershipStarLines", "rendering", mothershipNumStarLines, 0, Integer.MAX_VALUE,
-                "Number of speed lines to display while in transit. A lower number might improve performance, while a higher might look nicer.");
+		mothershipSpeedFactor = config.getFloat("mothershipSpeedFactor", "motherships", mothershipSpeedFactor, Float.MIN_VALUE, Float.MAX_VALUE, "A factor to be multiplied onto the mothership speed. Higher values = faster motherships.");
 
-        numAsteroids = config.getInt("numAsteroids", "rendering", numAsteroids, 0, Integer.MAX_VALUE,
-                "Approximate number of asteroids drawn in the sky when 'orbiting' an asteroid belt.");
+		mothershipFuelFactor = config.getFloat("mothershipFuelFactor", "motherships", mothershipFuelFactor, Float.MIN_VALUE, Float.MAX_VALUE, "A factor to be multiplied onto the fuel usages of mothership engines. Higher values = higher fuel usage");
 
-        // excluded bodies
-        bodiesNoRender = configGetStringHashSet(config, "skyRenderExclude", "rendering", emptySet, "Names of bodies to exclude from rendering in the sky, for reasons other than being asteroid belts");
+		mothershipBodiesNoOrbit = configGetStringHashSet(config, "bodiesNoOrbit", "motherships", emptySet, "Bodies which should not be orbitable by motherships");
 
+		// mothershipUserRestriction = config.getBoolean("restrictMothershipToOwner", "mothership", true, "If true, only the one who built the mothership will be able to use it. If false, anyone can");
 
-        // asteroidBeltBodies
-        asteroidBeltBodies = configGetStringHashSet(config, "asteroidBelts", "rendering", defaultAsteroidBelts, "Names of bodies to be considered asteroid belts. These values are automatically added to skyRenderExclude, so it is not necessary to add them to both.");
+		mothershipUserMatchUUID = config.getBoolean("matchUsersByUUID", "mothership", mothershipUserMatchUUID, "If true, users will be identified by UUID, if false by username. You will probably only want the latter if you run an 'offline' server...");
 
-        // suns
+		// rendering
+		mothershipNumStarLines = config.getInt("mothershipStarLines", "rendering", mothershipNumStarLines, 0, Integer.MAX_VALUE, "Number of speed lines to display while in transit. A lower number might improve performance, while a higher might look nicer.");
 
-        String[] sunData = config.getStringList("additionalSuns", "rendering", defaultExtraSuns, "Additional bodies to render with a colored aura, or set the aura of a specific star. \nThe bodies in here will be considered stars on motherships as well. \nFormat: '<bodyName>:<r>/<g>/<b>' with the colors as floats between 0 and 1. \nExample: 'myPlanet:1/0.6/0.1'");
-        for(String str: sunData) {
-            String[] parts1 = str.split(":", 2);
-            if(parts1.length < 2) {
-                FMLRelaunchLog.log(Constants.MOD_NAME_SIMPLE, Level.WARN, "'"+parts1+"' is not a valid sun configuration");
-                continue;
-            }
-            String body  = parts1[0];
-            String color = parts1[1];
+		numAsteroids = config.getInt("numAsteroids", "rendering", numAsteroids, 0, Integer.MAX_VALUE, "Approximate number of asteroids drawn in the sky when 'orbiting' an asteroid belt.");
 
-            String[] parts2 = color.split("/",3);
-            if(parts2.length < 3) {
-                continue;
-            }
+		// excluded bodies
+		bodiesNoRender = configGetStringHashSet(config, "skyRenderExclude", "rendering", emptySet, "Names of bodies to exclude from rendering in the sky, for reasons other than being asteroid belts");
 
+		// asteroidBeltBodies
+		asteroidBeltBodies = configGetStringHashSet(config, "asteroidBelts", "rendering", defaultAsteroidBelts, "Names of bodies to be considered asteroid belts. These values are automatically added to skyRenderExclude, so it is not necessary to add them to both.");
 
-            Vector3 colorVec = new Vector3 (
-                    Double.parseDouble(parts2[0]),
-                    Double.parseDouble(parts2[1]),
-                    Double.parseDouble(parts2[2])
-            );
+		// suns
 
-            sunColorMap.put(body, colorVec);
+		String[] sunData = config.getStringList("additionalSuns", "rendering", defaultExtraSuns, "Additional bodies to render with a colored aura, or set the aura of a specific star. \nThe bodies in here will be considered stars on motherships as well. \nFormat: '<bodyName>:<r>/<g>/<b>' with the colors as floats between 0 and 1. \nExample: 'myPlanet:1/0.6/0.1'");
+		for (String str : sunData) {
+			String[] parts1 = str.split(":", 2);
+			if (parts1.length < 2) {
+				FMLRelaunchLog.log(Constants.MOD_NAME_SIMPLE, Level.WARN, "'" + parts1 + "' is not a valid sun configuration");
+				continue;
+			}
+			String body = parts1[0];
+			String color = parts1[1];
 
-        }
+			String[] parts2 = color.split("/", 3);
+			if (parts2.length < 3) {
+				continue;
+			}
 
-        // rings
+			Vector3 colorVec = new Vector3(Double.parseDouble(parts2[0]), Double.parseDouble(parts2[1]), Double.parseDouble(parts2[2]));
 
-        String[] ringData = config.getStringList("planetsWithRings", "rendering", defaultPlanetsWithRings, "Bodies to render with rings. \nThe format is: <bodyName>:<gapStart>:<gapEnd>:<Mod_Asset_Prefix>:<textureName>. \nThe 'gapStart' and 'gapEnd' is the number of pixels from the left or the top to the start of the gap for the planet and the end, respectively. \nExample: 'uranus:8:20:galacticraftcore:textures/gui/celestialbodies/uranusRings.png'");
-        for(String str: ringData) {
-            String[] parts1 = str.split(":", 5);
-            if(parts1.length < 5) {
-                FMLRelaunchLog.log(Constants.MOD_NAME_SIMPLE, Level.WARN, "'"+str+"' is not a valid ring configuration");
-                continue;
-            }
-            String body = parts1[0];
-            int gapStart = Integer.valueOf(parts1[1]);
-            int gapEnd = Integer.valueOf(parts1[2]);
-            String assetPrefix = parts1[3];
-            String textureName = parts1[4];
+			sunColorMap.put(body, colorVec);
 
+		}
 
+		// rings
 
-            if(gapStart <= 0 || gapEnd <= 0 || gapEnd <= gapStart) {
-                FMLRelaunchLog.log(Constants.MOD_NAME_SIMPLE, Level.WARN, "'"+str+"' is not a valid ring configuration");
-                continue;
-            }
+		String[] ringData = config.getStringList("planetsWithRings", "rendering", defaultPlanetsWithRings, "Bodies to render with rings. \nThe format is: <bodyName>:<gapStart>:<gapEnd>:<Mod_Asset_Prefix>:<textureName>. \nThe 'gapStart' and 'gapEnd' is the number of pixels from the left or the top to the start of the gap for the planet and the end, respectively. \nExample: 'uranus:8:20:galacticraftcore:textures/gui/celestialbodies/uranusRings.png'");
+		for (String str : ringData) {
+			String[] parts1 = str.split(":", 5);
+			if (parts1.length < 5) {
+				FMLRelaunchLog.log(Constants.MOD_NAME_SIMPLE, Level.WARN, "'" + str + "' is not a valid ring configuration");
+				continue;
+			}
+			String body = parts1[0];
+			int gapStart = Integer.valueOf(parts1[1]);
+			int gapEnd = Integer.valueOf(parts1[2]);
+			String assetPrefix = parts1[3];
+			String textureName = parts1[4];
 
-            ringMap.put(body, new RingsRenderInfo(new ResourceLocation(assetPrefix, textureName), gapStart, gapEnd));
-        }
-        //
+			if (gapStart <= 0 || gapEnd <= 0 || gapEnd <= gapStart) {
+				FMLRelaunchLog.log(Constants.MOD_NAME_SIMPLE, Level.WARN, "'" + str + "' is not a valid ring configuration");
+				continue;
+			}
 
-        // schematics
-        schematicIdShuttle = config.getInt("shuttleSchematicsId", "schematics", schematicIdShuttle, 6, Integer.MAX_VALUE,
-                "ID of the Shuttle schematics, must be unique. 0-5 are used by Galacticraft already.");
+			ringMap.put(body, new RingsRenderInfo(new ResourceLocation(assetPrefix, textureName), gapStart, gapEnd));
+		}
+		//
 
-        guiIdShuttle = config.getInt("shuttleGuiId", "schematics", guiIdShuttle, 8, Integer.MAX_VALUE,
-                "ID of the Shuttle schematics GUI, must be unique. 0-7 are used by Galacticraft already.");
+		// schematics
+		schematicIdShuttle = config.getInt("shuttleSchematicsId", "schematics", schematicIdShuttle, 6, Integer.MAX_VALUE, "ID of the Shuttle schematics, must be unique. 0-5 are used by Galacticraft already.");
 
-        //config.get
+		guiIdShuttle = config.getInt("shuttleGuiId", "schematics", guiIdShuttle, 8, Integer.MAX_VALUE, "ID of the Shuttle schematics GUI, must be unique. 0-7 are used by Galacticraft already.");
 
-        // confMaxMothershipTier
+		// config.get
 
-        config.save();
-    }
+		// confMaxMothershipTier
 
-    public NBTTagCompound getServerOverrideData() {
-        NBTTagCompound data = new NBTTagCompound ();
+		config.save();
+	}
 
-        // now what do I need?
-        // - not the dim IDs
-        // - not the client stuff
+	public void setServerOverrideData(NBTTagCompound data) {
+		maxNumMotherships = data.getInteger("maxNumMotherships");
 
-        data.setInteger("maxNumMotherships", maxNumMotherships);
+		NBTTagList bodiesNoList = data.getTagList("msBodiesNoOrbit", net.minecraftforge.common.util.Constants.NBT.TAG_STRING);
+		mothershipBodiesNoOrbit.clear();
+		for (int i = 0; i < bodiesNoList.tagCount(); i++) {
+			String strData = bodiesNoList.getStringTagAt(i);
+			mothershipBodiesNoOrbit.add(strData);
+		}
 
-        // data.set
-        NBTTagList bodiesNoList = new NBTTagList();
-        for(String s: mothershipBodiesNoOrbit) {
-            NBTTagString strTag = new NBTTagString(s);
-            // strTag.func_150285_a_();
-            bodiesNoList.appendTag(strTag);
-        }
-        data.setTag("msBodiesNoOrbit", bodiesNoList);
+		mothershipMaxTier = data.getInteger("msMaxTier");
+		mothershipMaxTravelTime = data.getInteger("msMaxTravelTime");
+		mothershipFuelFactor = data.getFloat("msFuelFactor");
+		mothershipSpeedFactor = data.getFloat("msSpeedFactor");
+		mothershipUserMatchUUID = data.getBoolean("msMatchUUID");
+		planetDefaultTier = data.getInteger("planetDefaultTier");
+	}
 
+	/**
+	 * Add some things to the config which should always be in there
+	 */
+	public void setStaticConfigValues() {
 
-        data.setInteger("msMaxTier", mothershipMaxTier);
-        data.setInteger("msMaxTravelTime", mothershipMaxTravelTime);
-        data.setFloat("msFuelFactor", mothershipFuelFactor);
-        data.setFloat("msSpeedFactor", mothershipSpeedFactor);
-        data.setBoolean("msMatchUUID", mothershipUserMatchUUID);
-        data.setInteger("planetDefaultTier", planetDefaultTier);
+		asteroidBeltBodies.add(AmunRa.instance.asteroidBeltMehen.getName());
+		asteroidBeltBodies.add(AmunRa.instance.moonBaalRings.getName());
+		asteroidBeltBodies.add(AsteroidsModule.planetAsteroids.getName());
 
-        return data;
-    }
+		bodiesNoRender.addAll(asteroidBeltBodies);
+		// suns
+		sunColorMap.put(AmunRa.instance.starAmun.getName(), new Vector3(0.0D, 0.2D, 0.7D));
 
-    public void setServerOverrideData(NBTTagCompound data) {
-        maxNumMotherships = data.getInteger("maxNumMotherships");
+		// rings. do not override config settings, though
+		// the actual planets from GCCore don't even exist at this point oO
+		if (!ringMap.containsKey("uranus")) {
+			ringMap.put("uranus", new RingsRenderInfo(new ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/uranusRings.png"), 8, 20));
+		}
+		if (!ringMap.containsKey("saturn")) {
+			ringMap.put("saturn", new RingsRenderInfo(new ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/saturnRings.png"), 9, 21));
+		}
+	}
 
-        NBTTagList bodiesNoList = data.getTagList("msBodiesNoOrbit", net.minecraftforge.common.util.Constants.NBT.TAG_STRING);
-        mothershipBodiesNoOrbit.clear();
-        for(int i=0;i<bodiesNoList.tagCount();i++) {
-            String strData = bodiesNoList.getStringTagAt(i);
-            mothershipBodiesNoOrbit.add(strData);
-        }
+	/**
+	 * Looks for collisions between mothershipProviderID and any dimension ID
+	 */
+	public void verifyMothershipProviderId() {
+		CelestialBody body = GalaxyRegistry.getCelestialBodyFromDimensionID(mothershipProviderID);
 
-        mothershipMaxTier       = data.getInteger("msMaxTier");
-        mothershipMaxTravelTime = data.getInteger("msMaxTravelTime");
-        mothershipFuelFactor    = data.getFloat("msFuelFactor");
-        mothershipSpeedFactor   = data.getFloat("msSpeedFactor");
-        mothershipUserMatchUUID = data.getBoolean("msMatchUUID");
-        planetDefaultTier       = data.getInteger("planetDefaultTier");
-    }
-
-    /**
-     * Add some things to the config which should always be in there
-     */
-    public void setStaticConfigValues() {
-
-
-        asteroidBeltBodies.add(AmunRa.instance.asteroidBeltMehen.getName());
-        asteroidBeltBodies.add(AmunRa.instance.moonBaalRings.getName());
-        asteroidBeltBodies.add(AsteroidsModule.planetAsteroids.getName());
-
-        bodiesNoRender.addAll(asteroidBeltBodies);
-        // suns
-        sunColorMap.put(AmunRa.instance.starAmun.getName(), new Vector3(0.0D, 0.2D, 0.7D));
-
-        // rings. do not override config settings, though
-        // the actual planets from GCCore don't even exist at this point oO
-        if(!ringMap.containsKey("uranus")) {
-            ringMap.put("uranus", new RingsRenderInfo(new ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/uranusRings.png"), 8, 20));
-        }
-        if(!ringMap.containsKey("saturn")) {
-            ringMap.put("saturn", new RingsRenderInfo(new ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/saturnRings.png"), 9, 21));
-        }
-    }
-
-    public boolean isSun(CelestialBody body) {
-        return sunColorMap.containsKey(body.getName());
-    }
-
-    public boolean isAsteroidBelt(CelestialBody body) {
-        return asteroidBeltBodies.contains(body.getName());
-    }
-
-    private HashSet<String> configGetStringHashSet(Configuration config, String name, String category, String[] defaultValues, String comment) {
-        String[] data = config.getStringList(name, category, defaultValues, comment);
-        HashSet<String> result = new HashSet<String>();
-        for(String str: data) {
-            result.add(str);
-        }
-        return result;
-    }
-
-    /**
-     * Looks for collisions between mothershipProviderID and any dimension ID
-     */
-    public void verifyMothershipProviderId() {
-        CelestialBody body = GalaxyRegistry.getCelestialBodyFromDimensionID(mothershipProviderID);
-
-        if(body != null) {
-            String bodyName = AstronomyHelper.getDebugBodyName(body);
-            throw new RuntimeException("Please change \"mothershipProviderID\" in the config file. "+mothershipProviderID+" is already in use by "+bodyName);
-        }
-    }
+		if (body != null) {
+			String bodyName = AstronomyHelper.getDebugBodyName(body);
+			throw new RuntimeException("Please change \"mothershipProviderID\" in the config file. " + mothershipProviderID + " is already in use by " + bodyName);
+		}
+	}
 
 }

@@ -4,5 +4,4 @@ import de.katzenpapst.amunra.world.mapgen.BaseStructureComponent;
 
 public class GridVillageComponent extends BaseStructureComponent {
 
-
 }

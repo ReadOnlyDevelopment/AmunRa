@@ -12,136 +12,124 @@ import net.minecraft.inventory.Container;
 
 abstract public class GuiContainerTabbed extends GuiContainerGC {
 
-    protected List<AbstractTab> tabList;
+	public static final int TAB_BTN_OFFSET = 10000;
 
-    protected List<TabButton> tabButtons;
+	protected List<AbstractTab> tabList;
 
-    protected int activeTab = -1;
+	protected List<TabButton> tabButtons;
 
-    public static final int TAB_BTN_OFFSET = 10000;
+	protected int activeTab = -1;
 
-    public GuiContainerTabbed(Container container) {
-        super(container);
+	public GuiContainerTabbed(Container container) {
+		super(container);
 
-        tabList = new ArrayList<AbstractTab>();
-        tabButtons= new ArrayList<TabButton>();
-    }
+		tabList = new ArrayList<AbstractTab>();
+		tabButtons = new ArrayList<TabButton>();
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void initGui()
-    {
-        tabList.clear();
-        tabButtons.clear();
-        super.initGui();
-    }
+	@Override
+	protected void actionPerformed(GuiButton btn) {
+		if (btn.id >= TAB_BTN_OFFSET) {
+			int index = btn.id - TAB_BTN_OFFSET;
+			this.setActiveTab(index);
+		}
+		// TODO handle my own stuff first
+		getActiveTab().actionPerformed(btn);
+	}
 
-    public int addTab(AbstractTab tab)
-    {
-        if(tabList.add(tab)) {
-            tab.initGui();
+	public int addTab(AbstractTab tab) {
+		if (tabList.add(tab)) {
+			tab.initGui();
 
-            int newIndex = tabList.size()-1;
+			int newIndex = tabList.size() - 1;
 
-            final int guiX = (this.width - this.xSize) / 2;
-            final int guiY = (this.height - this.ySize) / 2;
+			final int guiX = (this.width - this.xSize) / 2;
+			final int guiY = (this.height - this.ySize) / 2;
 
-            // add button
-            TabButton test = new TabButton(TAB_BTN_OFFSET+newIndex, guiX-27, guiY+6 + newIndex*28, tab.getTooltip(), tab.getTooltipDescription(), tab.getIcon());
-            this.buttonList.add(test);
-            this.tabButtons.add(test);
+			// add button
+			TabButton test = new TabButton(TAB_BTN_OFFSET + newIndex, guiX - 27, guiY + 6 + newIndex * 28, tab.getTooltip(), tab.getTooltipDescription(), tab.getIcon());
+			this.buttonList.add(test);
+			this.tabButtons.add(test);
 
-            setActiveTab(0);
+			setActiveTab(0);
 
-            return newIndex;
-        }
-        return -1;
-    }
+			return newIndex;
+		}
+		return -1;
+	}
 
-    public AbstractTab getTab(int index)
-    {
-        return tabList.get(index);
-    }
+	@Override
+	public void drawScreen(int mouseX, int mouseY, float ticks) {
+		super.drawScreen(mouseX, mouseY, ticks);
+		// getActiveTab().
+		getActiveTab().drawScreen(mouseX, mouseY, ticks);
 
-    public void setActiveTab(int newIndex)
-    {
-        if(newIndex >= 0 && newIndex < tabList.size() && newIndex != activeTab) {
-            activeTab = newIndex;
-            int btnIndex = TAB_BTN_OFFSET + newIndex;
-            this.getActiveTab().onTabActivated();
-            for(TabButton btn: this.tabButtons) {
-                if(btn.id == btnIndex) {
-                    btn.isActive = true;
-                } else {
-                    btn.isActive = false;
-                }
-            }
-        }
-    }
+		for (TabButton tb : tabButtons) {
+			tb.drawTooltip(mouseX, mouseY);
+		}
+	}
 
-    public int getActiveTabIndex() {
-        return activeTab;
-    }
+	protected void drawTabs() {
 
-    public AbstractTab getActiveTab() {
-        return tabList.get(activeTab);
-    }
+	}
 
-    @Override
-    public void drawScreen(int mouseX, int mouseY, float ticks)
-    {
-        super.drawScreen(mouseX, mouseY, ticks);
-        //getActiveTab().
-        getActiveTab().drawScreen(mouseX, mouseY, ticks);
+	public AbstractTab getActiveTab() {
+		return tabList.get(activeTab);
+	}
 
-        for(TabButton tb : tabButtons) {
-            tb.drawTooltip(mouseX, mouseY);
-        }
-    }
+	public int getActiveTabIndex() {
+		return activeTab;
+	}
 
-    protected void drawTabs()
-    {
+	public AbstractTab getTab(int index) {
+		return tabList.get(index);
+	}
 
-    }
+	@Override
+	public void handleMouseInput() {
+		getActiveTab().handleMouseInput();
+		super.handleMouseInput();
+	}
 
-    @Override
-    protected void actionPerformed(GuiButton btn)
-    {
-        if(btn.id >= TAB_BTN_OFFSET) {
-            int index = btn.id - TAB_BTN_OFFSET;
-            this.setActiveTab(index);
-        }
-        // TODO handle my own stuff first
-        getActiveTab().actionPerformed(btn);
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public void initGui() {
+		tabList.clear();
+		tabButtons.clear();
+		super.initGui();
+	}
 
-    /**
-     * Fired when a key is typed. This is the equivalent of KeyListener.keyTyped(KeyEvent e).
-     */
-    @Override
-    protected void keyTyped(char keyChar, int keyId)
-    {
-        if(!getActiveTab().keyTyped(keyChar, keyId)) {
-            super.keyTyped(keyChar, keyId);
-        }
-    }
+	/**
+	 * Fired when a key is typed. This is the equivalent of KeyListener.keyTyped(KeyEvent e).
+	 */
+	@Override
+	protected void keyTyped(char keyChar, int keyId) {
+		if (!getActiveTab().keyTyped(keyChar, keyId)) {
+			super.keyTyped(keyChar, keyId);
+		}
+	}
 
-    @Override
-    public void handleMouseInput()
-    {
-        getActiveTab().handleMouseInput();
-        super.handleMouseInput();
-    }
+	public void setActiveTab(int newIndex) {
+		if (newIndex >= 0 && newIndex < tabList.size() && newIndex != activeTab) {
+			activeTab = newIndex;
+			int btnIndex = TAB_BTN_OFFSET + newIndex;
+			this.getActiveTab().onTabActivated();
+			for (TabButton btn : this.tabButtons) {
+				if (btn.id == btnIndex) {
+					btn.isActive = true;
+				} else {
+					btn.isActive = false;
+				}
+			}
+		}
+	}
 
-
-    /**
-     * Causes the screen to lay out its subcomponents again. This is the equivalent of the Java call
-     * Container.validate()
-     */
-    @Override
-    public void setWorldAndResolution(Minecraft mc, int x, int y)
-    {
-        super.setWorldAndResolution(mc, x, y);
-        getActiveTab().setWorldAndResolution(mc, x, y, this.xSize, this.ySize);
-    }
+	/**
+	 * Causes the screen to lay out its subcomponents again. This is the equivalent of the Java call Container.validate()
+	 */
+	@Override
+	public void setWorldAndResolution(Minecraft mc, int x, int y) {
+		super.setWorldAndResolution(mc, x, y);
+		getActiveTab().setWorldAndResolution(mc, x, y, this.xSize, this.ySize);
+	}
 }

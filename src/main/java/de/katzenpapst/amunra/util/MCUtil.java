@@ -10,8 +10,15 @@ public final class MCUtil {
 
 	private static MinecraftServer serverCached;
 
-	private MCUtil() {
-		throw new IllegalAccessError("Util Class");
+	public static Minecraft getClient() {
+		return FMLClientHandler.instance().getClient();
+	}
+
+	public static MinecraftServer getServer() {
+		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+		if (server == null)
+			return serverCached;
+		return server;
 	}
 
 	/**
@@ -24,15 +31,6 @@ public final class MCUtil {
 	}
 
 	/**
-	 * Check if this is the server side.
-	 *
-	 * @return True if and only if we are on the server side
-	 */
-	public static boolean isServer() {
-		return FMLCommonHandler.instance().getSide().isServer();
-	}
-
-	/**
 	 * Check if this is a deobfuscated (development) environment.
 	 *
 	 * @return True if and only if we are running in a deobfuscated environment
@@ -41,16 +39,17 @@ public final class MCUtil {
 		return (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
 	}
 
-	public static MinecraftServer getServer() {
-		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-		if (server == null) {
-			return serverCached;
-		}
-		return server;
+	/**
+	 * Check if this is the server side.
+	 *
+	 * @return True if and only if we are on the server side
+	 */
+	public static boolean isServer() {
+		return FMLCommonHandler.instance().getSide().isServer();
 	}
 
-	public static Minecraft getClient() {
-		return FMLClientHandler.instance().getClient();
+	private MCUtil() {
+		throw new IllegalAccessError("Util Class");
 	}
 
 }

@@ -9,26 +9,24 @@ import net.minecraft.world.chunk.IChunkProvider;
 
 public class MehenWorldProvider extends AmunRaAsteroidWorldProvider {
 
-    @Override
-    public CelestialBody getCelestialBody() {
-        return AmunRa.instance.asteroidBeltMehen;
-    }
+	@Override
+	public CelestialBody getCelestialBody() {
+		return AmunRa.instance.asteroidBeltMehen;
+	}
 
-    @Override
-    public Class<? extends IChunkProvider> getChunkProviderClass() {
-        return MehenChunkProvider.class;
-    }
+	@Override
+	public Class<? extends IChunkProvider> getChunkProviderClass() {
+		return MehenChunkProvider.class;
+	}
 
-    @Override
-    public Class<? extends WorldChunkManager> getWorldChunkManagerClass() {
-        return WorldChunkManagerAsteroids.class;
-    }
+	@Override
+	public String getSaveDataID() {
+		return "AsteroidDataMehen";
+	}
 
-    @Override
-    public String getSaveDataID() {
-        return "AsteroidDataMehen";
-    }
-
-
+	@Override
+	public Class<? extends WorldChunkManager> getWorldChunkManagerClass() {
+		return WorldChunkManagerAsteroids.class;
+	}
 
 }

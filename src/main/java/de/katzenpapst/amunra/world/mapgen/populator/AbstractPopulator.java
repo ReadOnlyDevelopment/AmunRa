@@ -6,24 +6,14 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 
 abstract public class AbstractPopulator {
-	protected int x;
-	protected int y;
-	protected int z;
-
-	public abstract boolean populate(World world);
+	protected int	x;
+	protected int	y;
+	protected int	z;
 
 	public AbstractPopulator(int x, int y, int z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-	}
-
-	public boolean isInChunk(int chunkX, int chunkZ) {
-
-		StructureBoundingBox box = CoordHelper.getChunkBB(chunkX, chunkZ);
-
-		return box.isVecInside(x, y, z);
-
 	}
 
 	public BlockVec3 getBlockVec3() {
@@ -41,4 +31,14 @@ abstract public class AbstractPopulator {
 	public int getZ() {
 		return z;
 	}
+
+	public boolean isInChunk(int chunkX, int chunkZ) {
+
+		StructureBoundingBox box = CoordHelper.getChunkBB(chunkX, chunkZ);
+
+		return box.isVecInside(x, y, z);
+
+	}
+
+	public abstract boolean populate(World world);
 }

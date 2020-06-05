@@ -7,35 +7,35 @@ import net.minecraft.world.storage.WorldSavedData;
 
 public class MothershipWorldProviderSaveFile extends WorldSavedData {
 
-    final static String saveFileId = "mothershipData";
+	final static String saveFileId = "mothershipData";
 
-    public NBTTagCompound data = null;
+	public static MothershipWorldProviderSaveFile getSaveFile(World world) {
+		MapStorage storage = world.getPerWorldStorage();
+		MothershipWorldProviderSaveFile result = (MothershipWorldProviderSaveFile) storage.getOrLoadData(MothershipWorldProviderSaveFile.class, saveFileId);
+		if (result == null) {
+			result = new MothershipWorldProviderSaveFile(saveFileId);
+			storage.setData(saveFileId, result);
+		}
+		return result;
+	}
 
-    public MothershipWorldProviderSaveFile(String p_i2141_1_) {
-        super(p_i2141_1_);
+	public NBTTagCompound data = null;
 
-        data = new NBTTagCompound();
-    }
+	public MothershipWorldProviderSaveFile(String key) {
+		super(key);
 
-    @Override
-    public void readFromNBT(NBTTagCompound nbt) {
-        data = nbt.getCompoundTag("data");
-    }
+		data = new NBTTagCompound();
+	}
 
-    @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-        nbt.setTag("data", data);
+	@Override
+	public void readFromNBT(NBTTagCompound nbt) {
+		data = nbt.getCompoundTag("data");
+	}
+
+	@Override
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+		nbt.setTag("data", data);
 		return nbt;
-    }
-
-    public static MothershipWorldProviderSaveFile getSaveFile(World world) {
-        MapStorage storage = world.getPerWorldStorage();
-        MothershipWorldProviderSaveFile result = (MothershipWorldProviderSaveFile)storage.getOrLoadData(MothershipWorldProviderSaveFile.class, saveFileId);
-        if (result == null) {
-            result = new MothershipWorldProviderSaveFile(saveFileId);
-            storage.setData(saveFileId, result);
-        }
-        return result;
-    }
+	}
 
 }

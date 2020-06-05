@@ -10,163 +10,139 @@ import net.minecraft.item.ItemStack;
 
 abstract public class ContainerWithPlayerInventory extends Container {
 
-    protected IInventory tileEntity;
+	protected IInventory tileEntity;
 
-    public ContainerWithPlayerInventory(IInventory tile) {
-        tileEntity = tile;
-    }
+	public ContainerWithPlayerInventory(IInventory tile) {
+		tileEntity = tile;
+	}
 
-    protected void initPlayerInventorySlots(InventoryPlayer player) {
-        initPlayerInventorySlots(player, 0);
-    }
-    protected void initPlayerInventorySlots(InventoryPlayer player, int yOffset) {
-        int y;
-        int x;
+	// let's try to fix shiftclicking
+	@Override
+	protected Slot addSlotToContainer(Slot slot) {
+		return super.addSlotToContainer(slot);
+	}
 
-        // Player inv:
+	protected void initPlayerInventorySlots(InventoryPlayer player) {
+		initPlayerInventorySlots(player, 0);
+	}
 
-        for (y = 0; y < 3; ++y)
-        {
-            for (x = 0; x < 9; ++x)
-            {
-                this.addSlotToContainer(new Slot(player, x + y * 9 + 9, 8 + x * 18, 51 + 68 + y * 18 + yOffset));
-            }
-        }
+	protected void initPlayerInventorySlots(InventoryPlayer player, int yOffset) {
+		int y;
+		int x;
 
-        for (y = 0; y < 9; ++y)
-        {
-            this.addSlotToContainer(new Slot(player, y, 8 + y * 18, 61 + 116 + yOffset));
-        }
-    }
+		// Player inv:
 
-    // let's try to fix shiftclicking
-    @Override
-    protected Slot addSlotToContainer(Slot slot)
-    {
-        return super.addSlotToContainer(slot);
-    }
+		for (y = 0; y < 3; ++y) {
+			for (x = 0; x < 9; ++x) {
+				this.addSlotToContainer(new Slot(player, x + y * 9 + 9, 8 + x * 18, 51 + 68 + y * 18 + yOffset));
+			}
+		}
 
-    protected boolean mergeSingleSlot(ItemStack mergeFrom, Slot slotToMergeTo) {
+		for (y = 0; y < 9; ++y) {
+			this.addSlotToContainer(new Slot(player, y, 8 + y * 18, 61 + 116 + yOffset));
+		}
+	}
 
-        ItemStack targetStack = slotToMergeTo.getStack();
+	protected boolean mergeSingleSlot(ItemStack mergeFrom, Slot slotToMergeTo) {
 
-        if(targetStack == null) {
-            // I think this means I can just put it in
-            slotToMergeTo.putStack(mergeFrom.copy());
-            mergeFrom.stackSize = 0;
-            slotToMergeTo.onSlotChanged();
-            return true;
-        }
+		ItemStack targetStack = slotToMergeTo.getStack();
 
-        if(targetStack.getItem() == mergeFrom.getItem() && (!mergeFrom.getHasSubtypes() || mergeFrom.getItemDamage() == targetStack.getItemDamage()) && ItemStack.areItemStackTagsEqual(mergeFrom, targetStack)) {
+		if (targetStack == null) {
+			// I think this means I can just put it in
+			slotToMergeTo.putStack(mergeFrom.copy());
+			mergeFrom.stackSize = 0;
+			slotToMergeTo.onSlotChanged();
+			return true;
+		}
 
+		if (targetStack.getItem() == mergeFrom.getItem() && (!mergeFrom.getHasSubtypes() || mergeFrom.getItemDamage() == targetStack.getItemDamage()) && ItemStack.areItemStackTagsEqual(mergeFrom, targetStack)) {
 
-            int newMax = targetStack.stackSize + mergeFrom.stackSize;
+			int newMax = targetStack.stackSize + mergeFrom.stackSize;
 
-            if (newMax <= mergeFrom.getMaxStackSize())
-            {
-                // everything fits into targetStack
-                mergeFrom.stackSize = 0;
-                targetStack.stackSize = newMax;
-                slotToMergeTo.onSlotChanged();
-                return true;
-            }
+			if (newMax <= mergeFrom.getMaxStackSize()) {
+				// everything fits into targetStack
+				mergeFrom.stackSize = 0;
+				targetStack.stackSize = newMax;
+				slotToMergeTo.onSlotChanged();
+				return true;
+			}
 
-            if (targetStack.stackSize < mergeFrom.getMaxStackSize())
-            {
-                // something should fit
-                mergeFrom.stackSize -= mergeFrom.getMaxStackSize() - targetStack.stackSize;
-                targetStack.stackSize = mergeFrom.getMaxStackSize();
-                slotToMergeTo.onSlotChanged();
-                return true;
-            }
-        }
-        return false;
-    }
+			if (targetStack.stackSize < mergeFrom.getMaxStackSize()) {
+				// something should fit
+				mergeFrom.stackSize -= mergeFrom.getMaxStackSize() - targetStack.stackSize;
+				targetStack.stackSize = mergeFrom.getMaxStackSize();
+				slotToMergeTo.onSlotChanged();
+				return true;
+			}
+		}
+		return false;
+	}
 
-    @Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int slotNr)
-    {
-        ItemStack resultStack = null;
+	@Override
+	public ItemStack transferStackInSlot(EntityPlayer player, int slotNr) {
+		ItemStack resultStack = null;
 
-        final Slot slot = (Slot) this.inventorySlots.get(slotNr);
-        final int containerInvSize = this.inventorySlots.size();
-        final int numSlotsAdded = containerInvSize - 36;
+		final Slot slot = this.inventorySlots.get(slotNr);
+		final int containerInvSize = this.inventorySlots.size();
+		final int numSlotsAdded = containerInvSize - 36;
 
-        // seems like inventorySlots is EVERYTHING
-        // and slotNr might be relate to EVERYTHING as well
+		// seems like inventorySlots is EVERYTHING
+		// and slotNr might be relate to EVERYTHING as well
 
-        if (slot != null && slot.getHasStack())
-        {
-            final ItemStack stack = slot.getStack();
-            resultStack = stack.copy();
+		if (slot != null && slot.getHasStack()) {
+			final ItemStack stack = slot.getStack();
+			resultStack = stack.copy();
 
-            if(slotNr < numSlotsAdded) {
-                // clicked one of the container's slots
-                if (!this.mergeItemStack(stack, containerInvSize - 36, containerInvSize, true))
-                {
-                    return null;
-                }
-            } else {
-                // clicked one of player's slots
-                // check if this works for any of my slots
-                boolean found = false;
-                for(int i=0;i<numSlotsAdded;i++) {
-                    Slot curSlot = (Slot) this.inventorySlots.get(i);
-                    if(curSlot instanceof SlotSpecific) {
-                        if(((SlotSpecific)curSlot).isItemValid(stack)) {
-                            // attempt merge
-                            if(mergeSingleSlot(stack, curSlot)) {
-                                found = true;
-                                break;
-                            }
-                        }
-                    } else if(tileEntity.isItemValidForSlot(i, stack)) {
-                        // attempt merge
-                        if(mergeSingleSlot(stack, curSlot)) {
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if(!found) {
+			if (slotNr < numSlotsAdded) {
+				// clicked one of the container's slots
+				if (!this.mergeItemStack(stack, containerInvSize - 36, containerInvSize, true))
+					return null;
+			} else {
+				// clicked one of player's slots
+				// check if this works for any of my slots
+				boolean found = false;
+				for (int i = 0; i < numSlotsAdded; i++) {
+					Slot curSlot = this.inventorySlots.get(i);
+					if (curSlot instanceof SlotSpecific) {
+						if (((SlotSpecific) curSlot).isItemValid(stack)) {
+							// attempt merge
+							if (mergeSingleSlot(stack, curSlot)) {
+								found = true;
+								break;
+							}
+						}
+					} else if (tileEntity.isItemValidForSlot(i, stack)) {
+						// attempt merge
+						if (mergeSingleSlot(stack, curSlot)) {
+							found = true;
+							break;
+						}
+					}
+				}
+				if (!found) {
 
-                    // fallback, moves between main inventory and hotbar
-                    if (slotNr < containerInvSize - 9)
-                    {
-                        if (!this.mergeItemStack(stack, containerInvSize - 9, containerInvSize, false))
-                        {
-                            return null;
-                        }
-                    }
-                    else if (!this.mergeItemStack(stack, containerInvSize - 36, containerInvSize - 9, false))
-                    {
-                        return null;
-                    }
-                }
-            }
+					// fallback, moves between main inventory and hotbar
+					if (slotNr < containerInvSize - 9) {
+						if (!this.mergeItemStack(stack, containerInvSize - 9, containerInvSize, false))
+							return null;
+					} else if (!this.mergeItemStack(stack, containerInvSize - 36, containerInvSize - 9, false))
+						return null;
+				}
+			}
 
+			if (stack.stackSize == 0) {
+				slot.putStack((ItemStack) null);
+			} else {
+				slot.onSlotChanged();
+			}
 
-            if (stack.stackSize == 0)
-            {
-                slot.putStack((ItemStack) null);
-            }
-            else
-            {
-                slot.onSlotChanged();
-            }
+			if (stack.stackSize == resultStack.stackSize)
+				return null;
 
-            if (stack.stackSize == resultStack.stackSize)
-            {
-                return null;
-            }
+			slot.onPickupFromSlot(player, stack);
+		}
 
-            slot.onPickupFromSlot(player, stack);
-        }
-
-        return resultStack;
-    }
-
-
+		return resultStack;
+	}
 
 }

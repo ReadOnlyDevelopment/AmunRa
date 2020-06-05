@@ -8,23 +8,22 @@ import net.minecraft.util.ResourceLocation;
 
 public class RenderPorcodon extends RenderLiving {
 
-    protected static final ResourceLocation pTextures = new ResourceLocation(AmunRa.ASSETPREFIX, "textures/entity/porcodon/porcodon.png");
+	protected static final ResourceLocation pTextures = new ResourceLocation(AmunRa.ASSETPREFIX, "textures/entity/porcodon/porcodon.png");
 
-    public RenderPorcodon() {
-        // model, shadowSize
-        super(new ModelPorcodon(),  0.7F);
-        // TODO Auto-generated constructor stub
+	public RenderPorcodon() {
+		// model, shadowSize
+		super(new ModelPorcodon(), 0.7F);
+		// TODO Auto-generated constructor stub
 
-        // wat
-    }
+		// wat
+	}
 
-    /**
-     * Returns the location of an entity's texture. Doesn't seem to be called unless you call Render.bindEntityTexture.
-     */
-    @Override
-    protected ResourceLocation getEntityTexture(Entity p_110775_1_)
-    {
-        return pTextures;
-    }
+	/**
+	 * Returns the location of an entity's texture. Doesn't seem to be called unless you call Render.bindEntityTexture.
+	 */
+	@Override
+	protected ResourceLocation getEntityTexture(Entity p_110775_1_) {
+		return pTextures;
+	}
 
 }

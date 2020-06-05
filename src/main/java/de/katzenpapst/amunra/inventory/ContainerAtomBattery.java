@@ -1,6 +1,6 @@
 package de.katzenpapst.amunra.inventory;
 
-import de.katzenpapst.amunra.tile.TileEntityIsotopeGenerator;
+import de.katzenpapst.amunra.old.tile.TileEntityIsotopeGenerator;
 import micdoodle8.mods.galacticraft.core.energy.item.ItemElectricBase;
 import micdoodle8.mods.galacticraft.core.inventory.SlotSpecific;
 import net.minecraft.entity.player.EntityPlayer;
@@ -8,20 +8,17 @@ import net.minecraft.entity.player.InventoryPlayer;
 
 public class ContainerAtomBattery extends ContainerWithPlayerInventory {
 
-    public ContainerAtomBattery(InventoryPlayer par1InventoryPlayer, TileEntityIsotopeGenerator solarGen) {
-        super(solarGen);
+	public ContainerAtomBattery(InventoryPlayer par1InventoryPlayer, TileEntityIsotopeGenerator solarGen) {
+		super(solarGen);
 
-        this.addSlotToContainer(new SlotSpecific(solarGen, 0, 152, 83, ItemElectricBase.class));
+		this.addSlotToContainer(new SlotSpecific(solarGen, 0, 152, 83, ItemElectricBase.class));
 
-        initPlayerInventorySlots(par1InventoryPlayer);
-    }
+		initPlayerInventorySlots(par1InventoryPlayer);
+	}
 
-
-
-    @Override
-    public boolean canInteractWith(EntityPlayer var1)
-    {
-        return ((TileEntityIsotopeGenerator)this.tileEntity).isUseableByPlayer(var1);
-    }
+	@Override
+	public boolean canInteractWith(EntityPlayer var1) {
+		return ((TileEntityIsotopeGenerator) this.tileEntity).isUseableByPlayer(var1);
+	}
 
 }
