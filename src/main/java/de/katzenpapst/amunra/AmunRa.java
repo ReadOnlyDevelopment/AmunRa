@@ -4,6 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import _net.rom.stellar.IMod;
+import _net.rom.stellar.network.NetworkHandler;
 import de.katzenpapst.amunra.command.CommandMothershipForceArrive;
 import de.katzenpapst.amunra.command.CommandMothershipInfo;
 import de.katzenpapst.amunra.command.CommandMoveMothership;
@@ -55,6 +62,7 @@ import de.katzenpapst.amunra.world.maahes.MaahesWorldProvider;
 import de.katzenpapst.amunra.world.mehen.MehenWorldProvider;
 import de.katzenpapst.amunra.world.neper.NeperWorldProvider;
 import de.katzenpapst.amunra.world.seth.SethWorldProvider;
+import mcp.MethodsReturnNonnullByDefault;
 import micdoodle8.mods.galacticraft.api.GalacticraftRegistry;
 import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody;
 import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody.ScalableDistance;
@@ -98,54 +106,63 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-@Mod(modid = AmunRa.MODID, version = AmunRa.VERSION, dependencies = "required-after:galacticraftcore@[4.0.2.261,]; required-after:galacticraftplanets;", name = AmunRa.MODNAME)
-public class AmunRa {
-	public static final String	MODID	= "amunra";
-	public static final String	MODNAME	= "Amun-Ra";
-	public static final String	VERSION	= "0.1.0";
+@Mod(modid = AmunRa.MODID, version = AmunRa.VERSION, dependencies = AmunRa.DEPENDENCIES, name = AmunRa.MODNAME, acceptedMinecraftVersions = "1.12")
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public class AmunRa implements IMod {
+	
+	public static final String MODID = "amunra";
+	public static final String MODNAME = "Amun-Ra";
+	public static final String VERSION = "0.1.0";
+    public static final int BUILD_NUM = 0;
+    public static final String DEPENDENCIES = "required-after:galacticraftcore@[4.0.2.261,]; required-after:galacticraftplanets;";
+    public static NetworkHandler network;
+    
+    public static final Logger LOGGER = LogManager.getLogger(MODNAME);
+
 
 	public static ARChannelHandler packetPipeline;
 
 	@Instance(AmunRa.MODID)
 	public static AmunRa instance;
 
-	public static final String	ASSETPREFIX		= "amunra";
-	public static final String	TEXTUREPREFIX	= ASSETPREFIX + ":";
+	public static final String ASSETPREFIX = "amunra";
+	public static final String TEXTUREPREFIX = ASSETPREFIX + ":";
 
-	public static CreativeTabGC	arTab;
-	public static int			chestRenderId;
-	public static int			msBoosterRendererId;
+	public static CreativeTabGC arTab;
+	public static int chestRenderId;
+	public static int msBoosterRendererId;
 
-	public static int				multiOreRendererId;
-	public static int				dummyRendererId;
-	public static final ARConfig	config	= new ARConfig();
+	public static int multiOreRendererId;
+	public static int dummyRendererId;
+	public static final ARConfig config = new ARConfig();
 	@SidedProxy(clientSide = "de.katzenpapst.amunra.proxy.ClientProxy", serverSide = "de.katzenpapst.amunra.proxy.ServerProxy")
-	public static ARSidedProxy		proxy;
-	public static DimensionType		mothershipDimensionType;
-	public Star						starRa	= null;
+	public static ARSidedProxy proxy;
+	public static DimensionType mothershipDimensionType;
+	public Star starRa = null;
 
-	public Planet		starAmun			= null;
-	public SolarSystem	systemAmunRa		= null;
-	public Planet		planetOsiris		= null;
-	public Planet		planetHorus			= null;
-	public Planet		planetBaal			= null;
-	public Planet		planetAnubis		= null;
-	public Planet		asteroidBeltMehen	= null;
-	public Planet		planetSekhmet		= null;
+	public Planet starAmun = null;
+	public SolarSystem systemAmunRa = null;
+	public Planet planetOsiris = null;
+	public Planet planetHorus = null;
+	public Planet planetBaal = null;
+	public Planet planetAnubis = null;
+	public Planet asteroidBeltMehen = null;
+	public Planet planetSekhmet = null;
 
 	public Moon moonBaalRings = null;
 
 	public Moon moonKhonsu;
 
-	public Moon	moonNeper;
-	public Moon	moonIah;
-	public Moon	moonBastet;
-	public Moon	moonMaahes;
+	public Moon moonNeper;
+	public Moon moonIah;
+	public Moon moonBastet;
+	public Moon moonMaahes;
 
 	public Moon moonThoth;
 
-	public Moon	moonSeth;
-	public Moon	moonKebe;
+	public Moon moonSeth;
+	public Moon moonKebe;
 
 	protected ArrayList<ResourceLocation> possibleMothershipTextures = new ArrayList<ResourceLocation>();
 
@@ -535,4 +552,24 @@ public class AmunRa {
 	 * }
 	 * 
 	 */
+
+	@Override
+	public String getModId() {
+		return MODID;
+	}
+
+	@Override
+	public String getModName() {
+		return MODNAME;
+	}
+
+	@Override
+	public String getVersion() {
+		return VERSION;
+	}
+
+	@Override
+	public int getBuildNum() {
+		return BUILD_NUM;
+	}
 }

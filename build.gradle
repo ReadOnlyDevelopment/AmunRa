@@ -25,18 +25,6 @@ plugins {
     id 'java'
 }
 
-repositories {
-    flatDir {
-        name "fileRepo"
-        dirs "repo"
-    }
-    mavenLocal()
-    mavenCentral()
-}
-
-dependencies {
-}
-
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
     options.compilerArgs = [

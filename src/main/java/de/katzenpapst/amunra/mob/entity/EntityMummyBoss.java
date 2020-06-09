@@ -88,7 +88,7 @@ public class EntityMummyBoss extends EntityMob implements IRangedAttackMob, IEnt
 			extraLoot.add(new ItemStack(Items.dye, 3, 4));
 		}
 
-		// this.getNavigator().getPathSearchRange()
+		// this.getNavigator().getResourcePathSearchRange()
 	}
 
 	@Override

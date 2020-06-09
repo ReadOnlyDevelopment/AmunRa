@@ -30,7 +30,7 @@ public class BoxHouseComponent extends GridVillageComponent {
 		BlockMetaPair mat = ((GridVillageStart) this.parent).getWallMaterial();
 		BlockMetaPair floor = ((GridVillageStart) this.parent).getFloorMaterial();
 		BlockMetaPair padding = ((GridVillageStart) this.parent).getFillMaterial();
-		BlockMetaPair path = ((GridVillageStart) this.parent).getPathMaterial();
+		BlockMetaPair path = ((GridVillageStart) this.parent).getResourcePathMaterial();
 		BlockMetaPair glassPane = new BlockMetaPair(Blocks.glass_pane, (byte) 0);
 		BlockMetaPair air = new BlockMetaPair(Blocks.air, (byte) 0);
 

@@ -176,7 +176,7 @@ public class GridVillageStart extends BaseStructureStart {
 		return floorMaterial;
 	}
 
-	public BlockMetaPair getPathMaterial() {
+	public BlockMetaPair getResourcePathMaterial() {
 		return pathMaterial;
 	}
 
