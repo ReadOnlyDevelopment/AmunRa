@@ -230,14 +230,6 @@ public class AmunRa implements IMod {
 
 	protected void initCelestialBodies() {
 
-		systemAmunRa = new SolarSystem("systemAmunRa", "milkyWay");
-		starRa = new Star("starRa");
-		systemAmunRa.setMainStar(starRa).setMapPosition(new Vector3(1.5F, -1.15F, 0.0F));
-		GalaxyRegistry.registerSolarSystem(systemAmunRa);
-
-		starRa.setBodyIcon(new ResourceLocation(AmunRa.ASSETPREFIX, "textures/gui/celestialbodies/sun-red2.png"));
-		starRa.setParentSolarSystem(systemAmunRa);
-
 		starAmun = createPlanet("starAmun", "sun-blue.png", Math.PI * 0.1, 0.7, 0.9);
 		starAmun.setRelativeSize(3.0F);
 		starAmun.setParentSolarSystem(systemAmunRa);
